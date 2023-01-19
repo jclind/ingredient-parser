@@ -1,5 +1,19 @@
-const { mongoHttp, spoonacularHttp } = require('./http-common.ts')
 const { parse } = require('recipe-ingredient-parser-v3')
+const axios = require('axios')
+
+const mongoHttp = axios.create({
+  baseURL:
+    'https://us-east-1.aws.data.mongodb-api.com/app/prepify-ixumn/endpoint',
+  headers: {
+    'Content-type': 'application/json',
+  },
+})
+const spoonacularHttp = axios.create({
+  baseURL: 'https://api.spoonacular.com/food/ingredients/',
+  headers: {
+    'Content-type': 'application/json',
+  },
+})
 
 const ingredientParser = async (ingrString, spoonacularAPIKey) => {
   const parsedIngr = parse(ingrString, 'eng')
