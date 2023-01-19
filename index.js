@@ -1,19 +1,41 @@
 const { mongoHttp, spoonacularHttp } = require('./http-common.ts')
 const dotenv = require('dotenv')
-console.log(dotenv.config())
+dotenv.config()
+const { parse } = require('recipe-ingredient-parser-v3')
 
-async function isWds(ingrName) {
+const ingredientParser = async ingrString => {
+  const parsedIngr = parse(ingrString, 'eng')
+  const formattedIngr = parsedIngr.ingredient
+    .trim()
+    .replace(/\s{2,}/g, ' ')
+    .replace(/,/g, '')
+    .replace(/^(fluid )/, '')
+    .replace(/^(fl )/, '')
+    .replace(/^(oz )/, '')
+    .trim()
+  console.log(formattedIngr)
+  console.log(parsedIngr)
+  if (formattedIngr) {
+    const ingrData = await getIngredientInfo(formattedIngr)
+    return ingrData
+  } else {
+    return null
+  }
+}
+
+async function getIngredientInfo(ingrName) {
   const ingrNameLower = ingrName.toLowerCase()
+  console.log(ingrNameLower)
   if (!ingrNameLower) return
   const mongoIngrData = await checkIngredient(ingrNameLower)
+  console.log(mongoIngrData)
   if (!mongoIngrData.data) {
-    console.log('here 1')
-    getSpoonacularIngrData(ingrNameLower)
+    const ingrData = await getSpoonacularIngrData(ingrNameLower)
+    console.log(ingrData, 'test')
+    return ingrData
   } else {
-    console.log('here 2')
+    return mongoIngrData.data
   }
-
-  return
 }
 
 async function checkIngredient(name) {
@@ -24,13 +46,14 @@ async function getSpoonacularIngrData(name) {
   const searchedIngr = await spoonacularHttp.get(
     `search?query=${name}&number=1&apiKey=${process.env.SPOONACULAR_API_KEY}`
   )
+  console.log(searchedIngr, 'test2')
 
   if (
     !searchedIngr.data ||
     !searchedIngr.data.results ||
     searchedIngr.data.results.length <= 0
   ) {
-    console.log('no searchedIngr data')
+    // console.log('no searchedIngr data')
     return null
   }
 
@@ -39,12 +62,15 @@ async function getSpoonacularIngrData(name) {
   const ingrData = await spoonacularHttp.get(
     `${ingrId}/information?amount=1&apiKey=${process.env.SPOONACULAR_API_KEY}`
   )
-  setMongoDBIngrData({ ...ingrData.data, name })
+  const mongoDBIngrData = { ...ingrData.data, name }
+  // console.log(mongoDBIngrData)
+  setMongoDBIngrData(mongoDBIngrData)
+  return mongoDBIngrData
 }
 
 async function setMongoDBIngrData(data) {
-  const test = await mongoHttp.post(`addIngredient`, data)
-  console.log(test.data)
+  await mongoHttp.post(`addIngredient`, data)
+  return data
 }
 
-module.exports = isWds
+module.exports = ingredientParser
