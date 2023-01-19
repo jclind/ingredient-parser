@@ -1,6 +1,4 @@
 const { mongoHttp, spoonacularHttp } = require('./http-common.ts')
-const dotenv = require('dotenv')
-dotenv.config()
 const { parse } = require('recipe-ingredient-parser-v3')
 
 const ingredientParser = async (ingrString, spoonacularAPIKey) => {
