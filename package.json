@@ -1,10 +1,15 @@
 {
   "name": "@jclind/ingredient-parser",
   "version": "1.0.3",
-  "description": "Parses given sentence including ingredient information and attemps to return quantity, measurement and ingredient",
-  "main": "index.js",
+  "description": "Parses given sentence including ingredient information and attemps to return quantity, measurement and ingredient data",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -17,8 +22,10 @@
   },
   "homepage": "https://github.com/jclind/ingredient-parser#readme",
   "dependencies": {
+    "@types/axios": "^0.14.0",
     "dotenv": "^16.0.3",
     "parse-ingredient": "^0.6.0",
-    "recipe-ingredient-parser-v3": "^1.2.18"
+    "recipe-ingredient-parser-v3": "^1.2.18",
+    "typescript": "^4.9.4"
   }
 }
