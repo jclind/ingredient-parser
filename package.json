@@ -23,6 +23,7 @@
   "homepage": "https://github.com/jclind/ingredient-parser#readme",
   "dependencies": {
     "@types/axios": "^0.14.0",
+    "convert-units": "^2.3.4",
     "dotenv": "^16.0.3",
     "parse-ingredient": "^0.6.0",
     "recipe-ingredient-parser-v3": "^1.2.18",

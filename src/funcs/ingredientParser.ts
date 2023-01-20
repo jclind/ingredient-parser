@@ -1,6 +1,7 @@
 import { parse } from 'recipe-ingredient-parser-v3'
-import { ParsedIngredient } from '../types/types.js'
+import { IngredientData, ParsedIngredient } from '../types/types.js'
 import { getIngredientInfo } from './getIngredientInfo.js'
+import convert from 'convert-units'
 
 const editIngredientString = (ingrStr: string) => {
   // Get string after first comment in ingredient string
@@ -19,6 +20,16 @@ const editIngredientString = (ingrStr: string) => {
   return { formattedIngrName, comment }
 }
 
+const calculatePrice = (
+  quantity: number,
+  unitSymbol: string,
+  price: number
+) => {
+  const convertToUnit: number = convert(quantity).from(unitSymbol).to('g')
+  const multiplier = convertToUnit / 100
+  return multiplier * price
+}
+
 const ingredientParser = async (
   ingrString: string,
   spoonacularAPIKey: string
@@ -33,9 +44,15 @@ const ingredientParser = async (
     comment,
   }
   if (formattedIngr) {
-    const ingrData = await getIngredientInfo(
+    const ingrData: IngredientData = await getIngredientInfo(
       formattedIngrName,
       spoonacularAPIKey
+    )
+
+    return calculatePrice(
+      parsedIngr.quantity,
+      parsedIngr.symbol,
+      ingrData.estimatedCost.value
     )
     return { ...ingrData, parsedIngredient: updatedParsedIngr }
   } else {
