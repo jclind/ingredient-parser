@@ -1,6 +1,6 @@
 {
   "name": "@jclind/ingredient-parser",
-  "version": "1.0.5",
+  "version": "1.0.3",
   "description": "Parses given sentence including ingredient information and attemps to return quantity, measurement and ingredient data",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/jclind/ingredient-parser#readme",
   "dependencies": {
+    "@jclind/ingredient-unit-converter": "^1.0.2",
     "@types/axios": "^0.14.0",
     "convert-units": "^2.3.4",
     "dotenv": "^16.0.3",

@@ -1,7 +1,7 @@
 import { parse } from 'recipe-ingredient-parser-v3'
 import { IngredientData, ParsedIngredient } from '../types/types.js'
 import { getIngredientInfo } from './getIngredientInfo.js'
-import convert from 'convert-units'
+import { converter } from '@jclind/ingredient-unit-converter'
 
 const editIngredientString = (ingrStr: string) => {
   // Get string after first comment in ingredient string
@@ -20,14 +20,16 @@ const editIngredientString = (ingrStr: string) => {
   return { formattedIngrName, comment }
 }
 
-const calculatePrice = (
-  quantity: number,
-  unitSymbol: string,
-  price: number
-) => {
-  const convertToUnit: number = convert(quantity).from(unitSymbol).to('g')
-  const multiplier = convertToUnit / 100
-  return multiplier * price
+const calculatePrice = (quantity: number, unit: string, price: number) => {
+  if (!quantity) return price
+  if (!unit) return price * quantity
+
+  const convertedUnit = converter(quantity, unit)
+  if (convertedUnit.error) return convertedUnit.error
+
+  const convertedGrams = convertedUnit.quantity
+
+  return convertedGrams * price
 }
 
 const ingredientParser = async (
@@ -49,12 +51,12 @@ const ingredientParser = async (
       spoonacularAPIKey
     )
 
-    return calculatePrice(
+    const totalPrice = calculatePrice(
       parsedIngr.quantity,
-      parsedIngr.symbol,
+      parsedIngr.unit,
       ingrData.estimatedCost.value
     )
-    return { ...ingrData, parsedIngredient: updatedParsedIngr }
+    return { ...ingrData, parsedIngredient: updatedParsedIngr, totalPrice }
   } else {
     return {
       error:

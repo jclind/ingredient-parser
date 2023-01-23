@@ -26,7 +26,7 @@ export const getIngredientInformation = async (
   let ingrData: any
   try {
     ingrData = await spoonacularHttp.get(
-      `${ingrId}/information?amount=28.3495&apiKey=${spoonacularAPIKey}`
+      `${ingrId}/information?amount=1&apiKey=${spoonacularAPIKey}`
     )
   } catch (error) {
     const res: any = error.response.data
