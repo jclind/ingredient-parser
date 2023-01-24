@@ -1,5 +1,9 @@
 import { parse } from 'recipe-ingredient-parser-v3'
-import { IngredientData, ParsedIngredient } from '../types/types.js'
+import {
+  IngredientData,
+  IngredientResponse,
+  ParsedIngredient,
+} from '../types/types.js'
 import { calculatePrice } from './calculatePrice.js'
 import { editIngredientString } from './editIngredientString.js'
 import { getIngredientInfo } from './getIngredientInfo.js'
@@ -7,7 +11,7 @@ import { getIngredientInfo } from './getIngredientInfo.js'
 const ingredientParser = async (
   ingrString: string,
   spoonacularAPIKey: string
-): Promise<any> => {
+): Promise<IngredientResponse> => {
   const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
   const formattedIngr = editIngredientString(parsedIngr.ingredient)
   const { formattedIngrName, comment } = formattedIngr
