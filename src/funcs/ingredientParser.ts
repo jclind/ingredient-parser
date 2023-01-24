@@ -56,11 +56,15 @@ const ingredientParser = async (
       parsedIngr.unit,
       ingrData.estimatedCost.value
     )
-    return { ...ingrData, parsedIngredient: updatedParsedIngr, totalPrice }
+    return {
+      ingredientData: { ...ingrData, totalPrice },
+      parsedIngredient: updatedParsedIngr,
+    }
   } else {
     return {
       error:
         'Ingredient not formatted correctly. Please pass ingredient comments/instructions after a comma',
+      ingredientData: null,
       parsedIngredient: updatedParsedIngr,
     }
   }

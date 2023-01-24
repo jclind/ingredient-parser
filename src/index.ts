@@ -1,3 +1,8 @@
 import ingredientParser from './funcs/ingredientParser.js'
-export default ingredientParser
+import {
+  ParsedIngredient as ParsedIngredientType,
+  IngredientData as IngredientDataType,
+} from './types/types.js'
+
+export { ingredientParser, ParsedIngredientType, IngredientDataType }
 // export { default as ingredientParser } from './funcs/ingredientParser.js'
