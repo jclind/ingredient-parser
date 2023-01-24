@@ -108,3 +108,17 @@ parseIngredient('1 cup rice', INVALID_API_KEY)
 }
 */
 ```
+
+## Typescript
+Typescript definitions are also included in the ingredient-parser package:
+```
+import { parseIngredient, ParsedIngredientType, IngredientDataType, IngredientResponseType, } from '@jclind/ingredient-parser';
+
+const ingredientString: string = '1 cup rice, washed';
+const apiKey: string = 'YOUR_API_KEY';
+
+const parsed: IngredientResponseType = parseIngredient(ingredientString, apiKey);
+
+const parsedIngredient: ParsedIngredientType = parsed.parsedIngredient
+const ingredientData: IngredientDataType = parsed.ingredientData
+```
