@@ -1,36 +1,8 @@
 import { parse } from 'recipe-ingredient-parser-v3'
 import { IngredientData, ParsedIngredient } from '../types/types.js'
+import { calculatePrice } from './calculatePrice.js'
+import { editIngredientString } from './editIngredientString.js'
 import { getIngredientInfo } from './getIngredientInfo.js'
-import { converter } from '@jclind/ingredient-unit-converter'
-
-const editIngredientString = (ingrStr: string) => {
-  // Get string after first comment in ingredient string
-  let ingr = ingrStr.split(',')[0]?.trim() ?? ingrStr
-  let comment = ingrStr.split(',')[1]?.trim() ?? null
-
-  const formattedIngrName = ingr
-    .trim()
-    .replace(/\s{2,}/g, ' ')
-    .replace(/,/g, '')
-    .replace(/^(fluid )/, '')
-    .replace(/^(fl )/, '')
-    .replace(/^(oz )/, '')
-    .trim()
-
-  return { formattedIngrName, comment }
-}
-
-const calculatePrice = (quantity: number, unit: string, price: number) => {
-  if (!quantity) return price
-  if (!unit) return price * quantity
-
-  const convertedUnit = converter(quantity, unit)
-  if (convertedUnit.error) return convertedUnit.error
-
-  const convertedGrams = convertedUnit.quantity
-
-  return convertedGrams * price
-}
 
 const ingredientParser = async (
   ingrString: string,
@@ -46,18 +18,40 @@ const ingredientParser = async (
     comment,
   }
   if (formattedIngr) {
-    const ingrData: IngredientData = await getIngredientInfo(
+    const ingrData = await getIngredientInfo(
       formattedIngrName,
       spoonacularAPIKey
     )
 
+    const {
+      estimatedCost,
+      meta,
+      categoryPath,
+      unit,
+      unitShort,
+      unitLong,
+      original,
+      id,
+      ...reducedIngrData
+    } = ingrData
+
     const totalPrice = calculatePrice(
       parsedIngr.quantity,
       parsedIngr.unit,
-      ingrData.estimatedCost.value
+      estimatedCost.value
     )
+
+    const imgPath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`
+    const ingredientId = id
+    const updatedIngrData: IngredientData = {
+      ...reducedIngrData,
+      ingredientId,
+      imgPath,
+      totalPriceUSACents: totalPrice,
+    }
+
     return {
-      ingredientData: { ...ingrData, totalPrice },
+      ingredientData: updatedIngrData,
       parsedIngredient: updatedParsedIngr,
     }
   } else {

@@ -14,27 +14,17 @@ export type ParsedIngredient = {
 
 export interface IngredientData {
   id: number
-  original: string
   originalName: string
   name: string
   amount: number
-  unit: string
-  unitShort: string
-  unitLong: string
   possibleUnits: string[]
-  estimatedCost: EstimatedCost
   consistency: string
   shoppingListUnits: string[]
   aisle: string
   image: string
-  meta: any[]
+  imagePath: string
   nutrition: Nutrition
-  categoryPath: string[]
-}
-
-export interface EstimatedCost {
-  value: number
-  unit: string
+  totalPriceUSACents: number | null
 }
 
 export interface Nutrition {
