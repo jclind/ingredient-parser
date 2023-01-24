@@ -12,8 +12,8 @@ export async function getSpoonacularIngrData(
   if (searchedIngr.error) return searchedIngr
   const ingrId = searchedIngr?.data?.results[0]?.id ?? null
 
-  if (!ingrId) return { error: 'No Data Found', errorMsg: 'No Data Found' }
-
+  if (!ingrId) throw new Error(`No Data Found, unknown ingredient: ${name}`)
+  1
   const ingrData = await getIngredientInformation(ingrId, spoonacularAPIKey)
   if (ingrData.error) return ingrData
 

@@ -12,9 +12,9 @@ export const searchIngredient = async (name: string, spoonacularAPIKey) => {
   } catch (error) {
     const res: any = error.response.data
     if (res.code === 401) {
-      return { errorMsg: 'API Key Not Valid', error }
+      throw new Error('API Key Not Valid')
     } else {
-      return { errorMsg: 'Error Occurred, Please Try Again', error }
+      throw new Error('Error Occurred, Please Try Again')
     }
   }
   return searchedIngr
@@ -31,9 +31,9 @@ export const getIngredientInformation = async (
   } catch (error) {
     const res: any = error.response.data
     if (res.code === 401) {
-      return { errorMsg: 'API Key Not Valid', error }
+      throw new Error('API Key Not Valid')
     } else {
-      return { errorMsg: 'Error Occurred, Please Try Again', error }
+      throw new Error('Error Occurred, Please Try Again')
     }
   }
   return ingrData

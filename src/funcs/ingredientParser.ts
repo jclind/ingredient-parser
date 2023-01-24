@@ -17,12 +17,18 @@ const ingredientParser = async (
     ingredient: formattedIngrName,
     comment,
   }
-  if (formattedIngr) {
-    const ingrData = await getIngredientInfo(
-      formattedIngrName,
-      spoonacularAPIKey
-    )
-
+  let ingrData = null
+  try {
+    ingrData = await getIngredientInfo(formattedIngrName, spoonacularAPIKey)
+    console.log(ingrData)
+  } catch (error) {
+    return {
+      error: { message: error.message },
+      ingredientData: null,
+      parsedIngredient: updatedParsedIngr ?? null,
+    }
+  }
+  if (formattedIngr && ingrData) {
     const {
       estimatedCost,
       meta,
@@ -56,8 +62,10 @@ const ingredientParser = async (
     }
   } else {
     return {
-      error:
-        'Ingredient not formatted correctly. Please pass ingredient comments/instructions after a comma',
+      error: {
+        message:
+          'Ingredient not formatted correctly or Ingredient Unknown. Please pass ingredient comments/instructions after a comma',
+      },
       ingredientData: null,
       parsedIngredient: updatedParsedIngr,
     }
