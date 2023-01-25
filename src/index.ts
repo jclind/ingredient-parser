@@ -11,4 +11,3 @@ export {
   IngredientDataType,
   IngredientResponseType,
 }
-// export { default as ingredientParser } from './funcs/ingredientParser.js'
