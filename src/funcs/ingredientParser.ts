@@ -3,7 +3,7 @@ import {
   IngredientData,
   IngredientResponse,
   ParsedIngredient,
-} from '../types/types.js'
+} from '../../types.js'
 import { calculatePrice } from './calculatePrice.js'
 import { editIngredientString } from './editIngredientString.js'
 import { getIngredientInfo } from './getIngredientInfo.js'

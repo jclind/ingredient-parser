@@ -3,7 +3,7 @@ import {
   ParsedIngredient as ParsedIngredientType,
   IngredientData as IngredientDataType,
   IngredientResponse as IngredientResponseType,
-} from './types/types.js'
+} from '../types.js'
 
 export {
   ingredientParser,
