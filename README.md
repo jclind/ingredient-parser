@@ -45,6 +45,7 @@ Returns an object `{parsedIngredient, ingredientData}` with the following proper
     shoppingListUnits: [ 'ounces', 'pounds' ],
     aisle: 'Pasta and Rice',
     image: 'uncooked-white-rice.png',
+    imagePath: 'https://spoonacular.com/cdn/ingredients_100x100/uncooked-white-rice.png',
     nutrition: {
       nutrients: [Array],
       properties: [Array],
