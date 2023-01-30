@@ -51,12 +51,10 @@ const ingredientParser = async (
       estimatedCost.value
     )
 
-    const imgPath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`
-    const ingredientId = id
+    const imagePath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`
     const updatedIngrData: IngredientData = {
       ...reducedIngrData,
-      ingredientId,
-      imgPath,
+      imagePath,
       totalPriceUSACents: totalPrice,
     }
 

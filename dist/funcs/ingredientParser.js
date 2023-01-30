@@ -26,12 +26,10 @@ const ingredientParser = async (ingrString, spoonacularAPIKey) => {
         const { estimatedCost, meta, categoryPath, unit, unitShort, unitLong, original, id, ...reducedIngrData } = ingrData;
         console.log(parsedIngr, estimatedCost);
         const totalPrice = calculatePrice(parsedIngr.quantity, parsedIngr.unit, estimatedCost.value);
-        const imgPath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`;
-        const ingredientId = id;
+        const imagePath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`;
         const updatedIngrData = {
             ...reducedIngrData,
-            ingredientId,
-            imgPath,
+            imagePath,
             totalPriceUSACents: totalPrice,
         };
         return {
