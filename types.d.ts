@@ -23,7 +23,8 @@ export type ParsedIngredient = {
 }
 
 export interface IngredientData {
-  id: number
+  _id: string
+  ingredientId: number
   originalName: string
   name: string
   amount: number

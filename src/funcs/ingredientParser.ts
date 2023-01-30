@@ -44,6 +44,7 @@ const ingredientParser = async (
       ...reducedIngrData
     } = ingrData
 
+    console.log(parsedIngr, estimatedCost)
     const totalPrice = calculatePrice(
       parsedIngr.quantity,
       parsedIngr.unit,
