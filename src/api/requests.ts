@@ -39,5 +39,5 @@ export const getIngredientInformation = async (
   return ingrData
 }
 export const setMongoDBIngrData = async data => {
-  await mongoHttp.post(`addIngredient`, data)
+  return await mongoHttp.post(`addIngredient`, data)
 }

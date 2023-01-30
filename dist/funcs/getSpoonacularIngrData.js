@@ -11,7 +11,8 @@ export async function getSpoonacularIngrData(name, spoonacularAPIKey) {
     if (ingrData.error)
         return ingrData;
     const mongoDBIngrData = { ...ingrData.data, name };
-    setMongoDBIngrData(mongoDBIngrData);
-    return mongoDBIngrData;
+    const mongoRes = await setMongoDBIngrData(mongoDBIngrData);
+    const _id = mongoRes.data.insertedId;
+    return { ...mongoDBIngrData, _id };
 }
 //# sourceMappingURL=getSpoonacularIngrData.js.map

@@ -1,3 +1,5 @@
+/// <reference types="typescript" />
+
 type StringOrNull = string | null
 type NumberOrNull = number | null
 

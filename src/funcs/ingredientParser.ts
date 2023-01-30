@@ -24,7 +24,6 @@ const ingredientParser = async (
   let ingrData = null
   try {
     ingrData = await getIngredientInfo(formattedIngrName, spoonacularAPIKey)
-    console.log(ingrData)
   } catch (error) {
     return {
       error: { message: error.message },

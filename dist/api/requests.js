@@ -35,6 +35,6 @@ export const getIngredientInformation = async (ingrId, spoonacularAPIKey) => {
     return ingrData;
 };
 export const setMongoDBIngrData = async (data) => {
-    await mongoHttp.post(`addIngredient`, data);
+    return await mongoHttp.post(`addIngredient`, data);
 };
 //# sourceMappingURL=requests.js.map
