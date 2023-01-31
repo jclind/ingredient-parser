@@ -4,11 +4,16 @@ type StringOrNull = string | null
 type NumberOrNull = number | null
 
 export type IngredientResponse =
-  | { parsedIngredient: ParsedIngredient; ingredientData: IngredientData }
+  | {
+      parsedIngredient: ParsedIngredient
+      ingredientData: IngredientData
+      id: string
+    }
   | {
       error: { message: string }
       parsedIngredient: ParsedIngredient | null
       ingredientData: IngredientData | null
+      id: string
     }
 
 export type ParsedIngredient = {
