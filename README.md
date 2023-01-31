@@ -16,7 +16,7 @@ const ingredientString = '1 cup rice, washed';
 const apiKey = 'YOUR_API_KEY';
 parseIngredient(ingredientString, apiKey);
 ```
-Returns an object `{parsedIngredient, ingredientData}` with the following properties/values.
+Returns an object `{id: (randomly generated id unique to every request), parsedIngredient, ingredientData}` with the following properties/values.
 
 `parsedIngredient`:
 ```
