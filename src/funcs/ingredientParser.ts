@@ -4,7 +4,6 @@ import {
   IngredientResponse,
   ParsedIngredient,
 } from '../../types.js'
-import { v4 as uuidv4 } from 'uuid'
 import { calculatePrice } from './calculatePrice.js'
 import { editIngredientString } from './editIngredientString.js'
 import { getIngredientInfo } from './getIngredientInfo.js'
@@ -30,7 +29,6 @@ const ingredientParser = async (
       error: { message: error.message },
       ingredientData: null,
       parsedIngredient: updatedParsedIngr ?? null,
-      id: uuidv4(),
     }
   }
   if (formattedIngr && ingrData) {
@@ -63,7 +61,6 @@ const ingredientParser = async (
     return {
       ingredientData: updatedIngrData,
       parsedIngredient: updatedParsedIngr,
-      id: uuidv4(),
     }
   } else {
     return {
@@ -73,7 +70,6 @@ const ingredientParser = async (
       },
       ingredientData: null,
       parsedIngredient: updatedParsedIngr,
-      id: uuidv4(),
     }
   }
 }

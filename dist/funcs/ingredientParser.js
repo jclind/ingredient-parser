@@ -1,5 +1,4 @@
 import { parse } from 'recipe-ingredient-parser-v3';
-import { v4 as uuidv4 } from 'uuid';
 import { calculatePrice } from './calculatePrice.js';
 import { editIngredientString } from './editIngredientString.js';
 import { getIngredientInfo } from './getIngredientInfo.js';
@@ -21,7 +20,6 @@ const ingredientParser = async (ingrString, spoonacularAPIKey) => {
             error: { message: error.message },
             ingredientData: null,
             parsedIngredient: updatedParsedIngr ?? null,
-            id: uuidv4(),
         };
     }
     if (formattedIngr && ingrData) {
@@ -37,7 +35,6 @@ const ingredientParser = async (ingrString, spoonacularAPIKey) => {
         return {
             ingredientData: updatedIngrData,
             parsedIngredient: updatedParsedIngr,
-            id: uuidv4(),
         };
     }
     else {
@@ -47,7 +44,6 @@ const ingredientParser = async (ingrString, spoonacularAPIKey) => {
             },
             ingredientData: null,
             parsedIngredient: updatedParsedIngr,
-            id: uuidv4(),
         };
     }
 };

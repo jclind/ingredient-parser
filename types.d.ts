@@ -7,13 +7,13 @@ export type IngredientResponse =
   | {
       parsedIngredient: ParsedIngredient
       ingredientData: IngredientData
-      id: string
+      id?: string
     }
   | {
       error: { message: string }
       parsedIngredient: ParsedIngredient | null
       ingredientData: IngredientData | null
-      id: string
+      id?: string
     }
 
 export type ParsedIngredient = {
