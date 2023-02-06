@@ -11,7 +11,7 @@ export type IngredientResponse =
     }
   | {
       error: { message: string }
-      parsedIngredient: ParsedIngredient | null
+      parsedIngredient: ParsedIngredient
       ingredientData: IngredientData | null
       id?: string
     }
@@ -22,6 +22,7 @@ export type ParsedIngredient = {
   unitPlural: StringOrNull
   symbol: StringOrNull
   ingredient: StringOrNull
+  originalIngredientString: string
   minQty: NumberOrNull
   maxQty: NumberOrNull
   comment: StringOrNull

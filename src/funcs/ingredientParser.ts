@@ -19,6 +19,7 @@ const ingredientParser = async (
   const updatedParsedIngr = {
     ...parsedIngr,
     ingredient: formattedIngrName,
+    originalIngredientString: ingrString,
     comment,
   }
   let ingrData = null
