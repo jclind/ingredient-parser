@@ -26,6 +26,7 @@ Returns an object `{id: (randomly generated id unique to every request), parsedI
     unitPlural: 'cups',
     symbol: 'c',
     ingredient: 'rice',
+    originalIngredientString: '1 cup rice, washed'
     minQty: 1,
     maxQty: 1,
     comment: 'washed'
@@ -82,6 +83,7 @@ parseIngredient('Invalid Text', YOUR_API_KEY)
     unitPlural: 'q.b.',
     symbol: null,
     ingredient: 'Invalid Text',
+    originalIngredientString: 'Invalid Text',
     minQty: 0,
     maxQty: 0,
     comment: null
@@ -101,7 +103,8 @@ parseIngredient('1 cup rice', INVALID_API_KEY)
     unit: 'cup',
     unitPlural: 'cups',
     symbol: 'c',
-    ingredient: 'black beans',
+    ingredient: 'rice',
+    originalIngredientString: '1 cup rice'
     minQty: 1,
     maxQty: 1,
     comment: null
