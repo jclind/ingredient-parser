@@ -1,5 +1,6 @@
 import { converter } from '@jclind/ingredient-unit-converter';
 export const calculatePrice = (quantity, unit, price) => {
+    console.log(quantity, unit, price);
     if (!quantity)
         return price;
     if (!unit)
@@ -11,7 +12,9 @@ export const calculatePrice = (quantity, unit, price) => {
     catch (error) {
         return null;
     }
-    const convertedGrams = convertedUnit.quantity;
+    if (!convertedUnit || convertedUnit.error)
+        return price * quantity;
+    const convertedGrams = Number(convertedUnit.quantity);
     const total = convertedGrams * price;
     return Math.ceil(total * 100) / 100;
 };

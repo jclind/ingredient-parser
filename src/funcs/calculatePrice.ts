@@ -5,6 +5,7 @@ export const calculatePrice = (
   unit: string,
   price: number
 ): number | null => {
+  console.log(quantity, unit, price)
   if (!quantity) return price
   if (!unit) return price * quantity
 
@@ -15,7 +16,9 @@ export const calculatePrice = (
     return null
   }
 
-  const convertedGrams = convertedUnit.quantity
-  const total = convertedGrams * price
+  if (!convertedUnit || convertedUnit.error) return price * quantity
+
+  const convertedGrams = Number(convertedUnit.quantity)
+  const total: number = convertedGrams * price
   return Math.ceil(total * 100) / 100
 }

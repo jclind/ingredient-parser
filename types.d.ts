@@ -41,7 +41,7 @@ export interface IngredientData {
   image: string
   imagePath: string
   nutrition: Nutrition
-  totalPriceUSACents: number | null
+  totalPriceUSACents: number
 }
 
 export interface Nutrition {
