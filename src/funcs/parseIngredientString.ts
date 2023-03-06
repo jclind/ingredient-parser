@@ -4,30 +4,37 @@ import { convertFractions } from './convertFractions.js'
 
 export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
   // Define regular expressions for text inside parentheses and text before the first comma
-  const parenRegex = /\((.*?)\)/
+  const parenRegex = /(\(.*?\))/
   const commaRegex = /^(.*?)(?=,)/
-
-  // Find the index of the first ',' character
-  const commaIndex = ingrStr.indexOf(',')
 
   // Extract the text inside the parentheses and the text before the first comma using regular expressions
   const parenthesesStr = ingrStr.match(parenRegex)?.[1] ?? ''
-  const textInParenthesesStr = parenthesesStr ? ` (${parenthesesStr})` : ''
+
+  const textWithoutParenthesesStr = ingrStr.replace(parenthesesStr, '')
+  // Find the index of the first ',' character
+  const commaIndex = textWithoutParenthesesStr.indexOf(',')
+
   let ingrText: string
   let comment: string
 
   // If there is no comma in the string don't include a comment
   if (commaIndex !== -1) {
     ingrText = convertFractions(
-      ingrStr.substring(0, commaIndex).replace(parenRegex, '').trim()
+      textWithoutParenthesesStr
+        .substring(0, commaIndex)
+        .replace(parenRegex, '')
+        .trim()
     )
     comment = (
-      ingrStr.replace(parenRegex, '').substring(commaIndex + 1) +
-      textInParenthesesStr
+      textWithoutParenthesesStr
+        .replace(parenRegex, '')
+        .substring(commaIndex + 1) +
+      ' ' +
+      parenthesesStr
     ).trim()
   } else {
     ingrText = convertFractions(ingrStr.replace(parenRegex, '').trim())
-    comment = textInParenthesesStr.trim()
+    comment = parenthesesStr.trim()
   }
   console.log(ingrText, comment, parenthesesStr)
 
