@@ -1,5 +1,6 @@
 import { parse } from 'recipe-ingredient-parser-v3'
 import { ParsedIngredient } from '../../types.js'
+import { convertFractions } from './convertFractions.js'
 
 export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
   // Define regular expressions for text inside parentheses and text before the first comma
@@ -11,8 +12,12 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
 
   // Extract the text inside the parentheses and the text before the first comma using regular expressions
   const textInParentheses = ingrStr.match(parenRegex)?.[1] ?? ''
-  const comment = ingrStr.substring(commaIndex + 1) + ' ' + textInParentheses
-  const ingrText = ingrStr.match(commaRegex)?.[1] ?? ''
+  const comment =
+    ingrStr
+      .replace(parenRegex, '')
+      .substring(commaIndex + 1)
+      .trim() + ` (${textInParentheses})`
+  const ingrText = convertFractions(ingrStr.match(commaRegex)?.[1] ?? '')
 
   const parsedIngrRes: ParsedIngredient = parse(ingrText, 'eng')
 
