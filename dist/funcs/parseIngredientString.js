@@ -7,12 +7,24 @@ export const parseIngredientString = (ingrStr) => {
     // Find the index of the first ',' character
     const commaIndex = ingrStr.indexOf(',');
     // Extract the text inside the parentheses and the text before the first comma using regular expressions
-    const textInParentheses = ingrStr.match(parenRegex)?.[1] ?? '';
-    const comment = ingrStr
-        .replace(parenRegex, '')
-        .substring(commaIndex + 1)
-        .trim() + ` (${textInParentheses})`;
-    const ingrText = convertFractions(ingrStr.match(commaRegex)?.[1] ?? '');
+    const parenthesesStr = ingrStr.match(parenRegex)?.[1] ?? '';
+    const textInParenthesesStr = parenthesesStr ? ` (${parenthesesStr})` : '';
+    let ingrText;
+    let comment;
+    // If there is no comma in the string don't include a comment
+    if (commaIndex !== -1) {
+        ingrText = convertFractions(ingrStr.substring(0, commaIndex).replace(parenRegex, ''));
+        comment =
+            ingrStr
+                .replace(parenRegex, '')
+                .substring(commaIndex + 1)
+                .trim() + textInParenthesesStr;
+    }
+    else {
+        ingrText = convertFractions(ingrStr.replace(parenRegex, '').trim());
+        comment = textInParenthesesStr;
+    }
+    console.log(comment);
     const parsedIngrRes = parse(ingrText, 'eng');
     if (!parsedIngrRes.ingredient) {
         return { ...parsedIngrRes, originalIngredientString: ingrStr, comment };
