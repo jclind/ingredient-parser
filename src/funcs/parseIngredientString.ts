@@ -36,9 +36,17 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     ingrText = convertFractions(ingrStr.replace(parenRegex, '').trim())
     comment = parenthesesStr.trim()
   }
-  console.log(ingrText, comment, parenthesesStr)
 
-  const parsedIngrRes: ParsedIngredient = parse(ingrText, 'eng')
+  const prepIngrText = ingrText.replace(/\b(lb|lbs)\b/g, match => {
+    // Replace lb or lbs with pound or pounds respectively
+    if (match === 'lb') {
+      return 'pound'
+    } else {
+      return 'pounds'
+    }
+  })
+
+  const parsedIngrRes: ParsedIngredient = parse(prepIngrText, 'eng')
 
   if (!parsedIngrRes.ingredient) {
     return { ...parsedIngrRes, originalIngredientString: ingrStr, comment }
@@ -53,6 +61,7 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     .replace(/,/g, '') // Remove commas
     .replace(/^(fluid|fl|oz) /, '') // Remove "fluid ", "fl ", or "oz " at the beginning of the string
     .replace(regex, '')
+
     .trim()
 
   return {

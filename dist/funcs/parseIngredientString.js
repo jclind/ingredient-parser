@@ -27,8 +27,16 @@ export const parseIngredientString = (ingrStr) => {
         ingrText = convertFractions(ingrStr.replace(parenRegex, '').trim());
         comment = parenthesesStr.trim();
     }
-    console.log(ingrText, comment, parenthesesStr);
-    const parsedIngrRes = parse(ingrText, 'eng');
+    const prepIngrText = ingrText.replace(/\b(lb|lbs)\b/g, match => {
+        // Replace lb or lbs with pound or pounds respectively
+        if (match === 'lb') {
+            return 'pound';
+        }
+        else {
+            return 'pounds';
+        }
+    });
+    const parsedIngrRes = parse(prepIngrText, 'eng');
     if (!parsedIngrRes.ingredient) {
         return { ...parsedIngrRes, originalIngredientString: ingrStr, comment };
     }
