@@ -1,1 +1,4 @@
-export declare const calculatePrice: (quantity: number, unit: string, price: number) => number | null;
+export declare const calculatePrice: (quantity: number, unit: string, price: {
+    estimatedSingleUnitPrice: number;
+    estimatedGramPrice: number;
+}) => number | null;

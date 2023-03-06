@@ -18,10 +18,10 @@ export const searchIngredient = async (name, spoonacularAPIKey) => {
     }
     return searchedIngr;
 };
-export const getIngredientInformation = async (ingrId, spoonacularAPIKey) => {
+export const getIngredientInformation = async (ingrId, unit, spoonacularAPIKey) => {
     let ingrData;
     try {
-        ingrData = await spoonacularHttp.get(`${ingrId}/information?amount=1&apiKey=${spoonacularAPIKey}`);
+        ingrData = await spoonacularHttp.get(`${ingrId}/information?amount=1&${unit ? 'unit=grams&' : ''}apiKey=${spoonacularAPIKey}`);
     }
     catch (error) {
         const res = error.response.data;

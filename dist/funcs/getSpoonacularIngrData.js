@@ -6,10 +6,19 @@ export async function getSpoonacularIngrData(name, spoonacularAPIKey) {
     const ingrId = searchedIngr?.data?.results[0]?.id ?? null;
     if (!ingrId)
         throw new Error(`No Data Found, unknown ingredient: ${name}`);
-    const ingrData = await getIngredientInformation(ingrId, spoonacularAPIKey);
-    if (ingrData.error)
-        return ingrData;
-    const mongoDBIngrData = { ...ingrData.data, name, ingredientId: ingrId };
+    const ingrDataGram = await getIngredientInformation(ingrId, true, spoonacularAPIKey);
+    const ingrDataSingleUnit = await getIngredientInformation(ingrId, false, spoonacularAPIKey);
+    if (ingrDataGram.error || ingrDataSingleUnit.error)
+        return ingrDataGram;
+    const estimatedGramPrice = ingrDataGram.data.estimatedCost.value;
+    const estimatedSingleUnitPrice = ingrDataSingleUnit.data.estimatedCost.value;
+    const ingrData = {
+        ...ingrDataGram.data,
+        name,
+        ingredientId: ingrId,
+        estimatedPrices: { estimatedGramPrice, estimatedSingleUnitPrice },
+    };
+    const mongoDBIngrData = ingrData;
     const mongoRes = await setMongoDBIngrData(mongoDBIngrData);
     const _id = mongoRes.data.insertedId;
     return { ...mongoDBIngrData, _id };

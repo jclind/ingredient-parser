@@ -34,7 +34,7 @@ const ingredientParser = async (
   }
   if (formattedIngr && ingrData) {
     const {
-      estimatedCost,
+      estimatedPrices,
       meta,
       categoryPath,
       unit,
@@ -45,11 +45,10 @@ const ingredientParser = async (
       ...reducedIngrData
     } = ingrData
 
-    console.log(parsedIngr, estimatedCost)
     const totalPrice = calculatePrice(
       parsedIngr.quantity,
       parsedIngr.unit,
-      estimatedCost.value
+      estimatedPrices
     )
 
     const imagePath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`

@@ -1,10 +1,9 @@
 import { converter } from '@jclind/ingredient-unit-converter';
 export const calculatePrice = (quantity, unit, price) => {
-    console.log(quantity, unit, price);
     if (!quantity)
-        return price;
+        return price.estimatedSingleUnitPrice;
     if (!unit)
-        return price * quantity;
+        return price.estimatedSingleUnitPrice * quantity;
     let convertedUnit;
     try {
         convertedUnit = converter(quantity, unit);
@@ -13,9 +12,9 @@ export const calculatePrice = (quantity, unit, price) => {
         return null;
     }
     if (!convertedUnit || convertedUnit.error)
-        return price * quantity;
+        return price.estimatedSingleUnitPrice * quantity;
     const convertedGrams = Number(convertedUnit.quantity);
-    const total = convertedGrams * price;
+    const total = convertedGrams * price.estimatedGramPrice;
     return Math.ceil(total * 100) / 100;
 };
 //# sourceMappingURL=calculatePrice.js.map

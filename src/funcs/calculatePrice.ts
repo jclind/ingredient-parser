@@ -3,11 +3,10 @@ import { converter } from '@jclind/ingredient-unit-converter'
 export const calculatePrice = (
   quantity: number,
   unit: string,
-  price: number
+  price: { estimatedSingleUnitPrice: number; estimatedGramPrice: number }
 ): number | null => {
-  console.log(quantity, unit, price)
-  if (!quantity) return price
-  if (!unit) return price * quantity
+  if (!quantity) return price.estimatedSingleUnitPrice
+  if (!unit) return price.estimatedSingleUnitPrice * quantity
 
   let convertedUnit
   try {
@@ -16,9 +15,10 @@ export const calculatePrice = (
     return null
   }
 
-  if (!convertedUnit || convertedUnit.error) return price * quantity
+  if (!convertedUnit || convertedUnit.error)
+    return price.estimatedSingleUnitPrice * quantity
 
   const convertedGrams = Number(convertedUnit.quantity)
-  const total: number = convertedGrams * price
+  const total: number = convertedGrams * price.estimatedGramPrice
   return Math.ceil(total * 100) / 100
 }

@@ -21,12 +21,15 @@ export const searchIngredient = async (name: string, spoonacularAPIKey) => {
 }
 export const getIngredientInformation = async (
   ingrId: number,
+  unit: boolean,
   spoonacularAPIKey
 ) => {
   let ingrData: any
   try {
     ingrData = await spoonacularHttp.get(
-      `${ingrId}/information?amount=1&apiKey=${spoonacularAPIKey}`
+      `${ingrId}/information?amount=1&${
+        unit ? 'unit=grams&' : ''
+      }apiKey=${spoonacularAPIKey}`
     )
   } catch (error) {
     const res: any = error.response.data
@@ -36,6 +39,7 @@ export const getIngredientInformation = async (
       throw new Error('Error Occurred, Please Try Again')
     }
   }
+
   return ingrData
 }
 export const setMongoDBIngrData = async data => {
