@@ -1,4 +1,4 @@
-import { IngredientData } from '../../types.js'
+import { IngredientData } from '../../index.js'
 import { mongoHttp, spoonacularHttp } from './http.js'
 
 export const checkIngredient = async (name: string) => {

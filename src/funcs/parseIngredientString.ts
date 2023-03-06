@@ -1,5 +1,5 @@
 import { parse } from 'recipe-ingredient-parser-v3'
-import { ParsedIngredient } from '../../types.js'
+import { ParsedIngredient } from '../../index.js'
 import { convertFractions } from './convertFractions.js'
 
 export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
