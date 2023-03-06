@@ -14,17 +14,14 @@ export const parseIngredientString = (ingrStr) => {
     // If there is no comma in the string don't include a comment
     if (commaIndex !== -1) {
         ingrText = convertFractions(ingrStr.substring(0, commaIndex).replace(parenRegex, ''));
-        comment =
-            ingrStr
-                .replace(parenRegex, '')
-                .substring(commaIndex + 1)
-                .trim() + textInParenthesesStr;
+        comment = (ingrStr.replace(parenRegex, '').substring(commaIndex + 1) +
+            textInParenthesesStr).trim();
     }
     else {
         ingrText = convertFractions(ingrStr.replace(parenRegex, '').trim());
-        comment = textInParenthesesStr;
+        comment = textInParenthesesStr.trim();
     }
-    console.log(comment);
+    console.log(ingrText, comment, parenthesesStr);
     const parsedIngrRes = parse(ingrText, 'eng');
     if (!parsedIngrRes.ingredient) {
         return { ...parsedIngrRes, originalIngredientString: ingrStr, comment };
