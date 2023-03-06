@@ -1,29 +1,21 @@
-import { parse } from 'recipe-ingredient-parser-v3';
 import { calculatePrice } from './calculatePrice.js';
-import { editIngredientString } from './editIngredientString.js';
+import { parseIngredientString } from './parseIngredientString.js';
 import { getIngredientInfo } from './getIngredientInfo.js';
 const ingredientParser = async (ingrString, spoonacularAPIKey) => {
-    const parsedIngr = parse(ingrString, 'eng');
-    const formattedIngr = editIngredientString(parsedIngr.ingredient ?? '');
-    const { formattedIngrName, comment } = formattedIngr;
-    const updatedParsedIngr = {
-        ...parsedIngr,
-        ingredient: formattedIngrName,
-        originalIngredientString: ingrString,
-        comment,
-    };
+    // const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
+    const parsedIngr = parseIngredientString(ingrString);
     let ingrData = null;
     try {
-        ingrData = await getIngredientInfo(formattedIngrName, spoonacularAPIKey);
+        ingrData = await getIngredientInfo(parsedIngr.ingredient || '', spoonacularAPIKey);
     }
     catch (error) {
         return {
             error: { message: error.message },
             ingredientData: null,
-            parsedIngredient: updatedParsedIngr ?? null,
+            parsedIngredient: parsedIngr ?? null,
         };
     }
-    if (formattedIngr && ingrData) {
+    if (parsedIngr.ingredient && ingrData) {
         const { estimatedPrices, meta, categoryPath, unit, unitShort, unitLong, original, id, ...reducedIngrData } = ingrData;
         const totalPrice = calculatePrice(parsedIngr.quantity, parsedIngr.unit, estimatedPrices);
         const imagePath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`;
@@ -34,7 +26,7 @@ const ingredientParser = async (ingrString, spoonacularAPIKey) => {
         };
         return {
             ingredientData: updatedIngrData,
-            parsedIngredient: updatedParsedIngr,
+            parsedIngredient: parsedIngr,
         };
     }
     else {
@@ -43,7 +35,7 @@ const ingredientParser = async (ingrString, spoonacularAPIKey) => {
                 message: 'Ingredient not formatted correctly or Ingredient Unknown. Please pass ingredient comments/instructions after a comma',
             },
             ingredientData: null,
-            parsedIngredient: updatedParsedIngr,
+            parsedIngredient: parsedIngr,
         };
     }
 };
