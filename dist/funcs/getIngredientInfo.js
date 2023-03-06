@@ -13,4 +13,3 @@ export async function getIngredientInfo(ingrName, spoonacularAPIKey) {
         return mongoIngrData.data;
     }
 }
-//# sourceMappingURL=getIngredientInfo.js.map

@@ -1,7 +1,9 @@
-export const editIngredientString = (ingrStr: string) => {
+export const editIngredientString = (
+  ingrStr: string
+): { formattedIngrName: string; comment: string } => {
   // Get string after first comment in ingredient string
   let ingr = ingrStr.split(',')[0]?.trim() ?? ingrStr
-  let comment = ingrStr.split(',')[1]?.trim() ?? null
+  let comment = ingrStr.split(',')[1]?.trim() ?? ''
 
   const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned']
   const regex = new RegExp('\\b(' + wordsToRemove.join('|') + ')\\b', 'gi')

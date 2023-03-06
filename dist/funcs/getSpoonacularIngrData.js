@@ -23,4 +23,3 @@ export async function getSpoonacularIngrData(name, spoonacularAPIKey) {
     const _id = mongoRes.data.insertedId;
     return { ...mongoDBIngrData, _id };
 }
-//# sourceMappingURL=getSpoonacularIngrData.js.map

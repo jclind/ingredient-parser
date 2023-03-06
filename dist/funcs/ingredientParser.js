@@ -4,7 +4,7 @@ import { editIngredientString } from './editIngredientString.js';
 import { getIngredientInfo } from './getIngredientInfo.js';
 const ingredientParser = async (ingrString, spoonacularAPIKey) => {
     const parsedIngr = parse(ingrString, 'eng');
-    const formattedIngr = editIngredientString(parsedIngr.ingredient);
+    const formattedIngr = editIngredientString(parsedIngr.ingredient ?? '');
     const { formattedIngrName, comment } = formattedIngr;
     const updatedParsedIngr = {
         ...parsedIngr,
@@ -48,4 +48,3 @@ const ingredientParser = async (ingrString, spoonacularAPIKey) => {
     }
 };
 export default ingredientParser;
-//# sourceMappingURL=ingredientParser.js.map

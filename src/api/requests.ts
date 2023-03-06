@@ -1,15 +1,19 @@
+import { IngredientData } from '../../types.js'
 import { mongoHttp, spoonacularHttp } from './http.js'
 
 export const checkIngredient = async (name: string) => {
   return await mongoHttp.get(`checkIngredient?name=${name}`)
 }
-export const searchIngredient = async (name: string, spoonacularAPIKey) => {
+export const searchIngredient = async (
+  name: string,
+  spoonacularAPIKey: string
+) => {
   let searchedIngr: any
   try {
     searchedIngr = await spoonacularHttp.get(
       `search?query=${name}&number=1&apiKey=${spoonacularAPIKey}`
     )
-  } catch (error) {
+  } catch (error: any) {
     const res: any = error.response.data
     if (res.code === 401) {
       throw new Error('API Key Not Valid')
@@ -22,7 +26,7 @@ export const searchIngredient = async (name: string, spoonacularAPIKey) => {
 export const getIngredientInformation = async (
   ingrId: number,
   unit: boolean,
-  spoonacularAPIKey
+  spoonacularAPIKey: string
 ) => {
   let ingrData: any
   try {
@@ -31,7 +35,7 @@ export const getIngredientInformation = async (
         unit ? 'unit=grams&' : ''
       }apiKey=${spoonacularAPIKey}`
     )
-  } catch (error) {
+  } catch (error: any) {
     const res: any = error.response.data
     if (res.code === 401) {
       throw new Error('API Key Not Valid')
@@ -42,6 +46,6 @@ export const getIngredientInformation = async (
 
   return ingrData
 }
-export const setMongoDBIngrData = async data => {
+export const setMongoDBIngrData = async (data: IngredientData) => {
   return await mongoHttp.post(`addIngredient`, data)
 }

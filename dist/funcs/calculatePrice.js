@@ -1,3 +1,4 @@
+//@ts-ignore
 import { converter } from '@jclind/ingredient-unit-converter';
 export const calculatePrice = (quantity, unit, price) => {
     if (!quantity)
@@ -17,4 +18,3 @@ export const calculatePrice = (quantity, unit, price) => {
     const total = convertedGrams * price.estimatedGramPrice;
     return Math.ceil(total * 100) / 100;
 };
-//# sourceMappingURL=calculatePrice.js.map

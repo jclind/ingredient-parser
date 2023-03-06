@@ -13,7 +13,8 @@ const ingredientParser = async (
   spoonacularAPIKey: string
 ): Promise<IngredientResponse> => {
   const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
-  const formattedIngr = editIngredientString(parsedIngr.ingredient)
+  const formattedIngr = editIngredientString(parsedIngr.ingredient ?? '')
+
   const { formattedIngrName, comment } = formattedIngr
 
   const updatedParsedIngr = {
@@ -25,7 +26,7 @@ const ingredientParser = async (
   let ingrData = null
   try {
     ingrData = await getIngredientInfo(formattedIngrName, spoonacularAPIKey)
-  } catch (error) {
+  } catch (error: any) {
     return {
       error: { message: error.message },
       ingredientData: null,

@@ -11,4 +11,3 @@ export const spoonacularHttp = axios.create({
         'Content-type': 'application/json',
     },
 });
-//# sourceMappingURL=http.js.map

@@ -1,7 +1,7 @@
 export const editIngredientString = (ingrStr) => {
     // Get string after first comment in ingredient string
     let ingr = ingrStr.split(',')[0]?.trim() ?? ingrStr;
-    let comment = ingrStr.split(',')[1]?.trim() ?? null;
+    let comment = ingrStr.split(',')[1]?.trim() ?? '';
     const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned'];
     const regex = new RegExp('\\b(' + wordsToRemove.join('|') + ')\\b', 'gi');
     const formattedIngrName = ingr
@@ -15,4 +15,3 @@ export const editIngredientString = (ingrStr) => {
         .trim();
     return { formattedIngrName, comment };
 };
-//# sourceMappingURL=editIngredientString.js.map

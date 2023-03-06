@@ -1,8 +1,9 @@
+//@ts-ignore
 import { converter } from '@jclind/ingredient-unit-converter'
 
 export const calculatePrice = (
-  quantity: number,
-  unit: string,
+  quantity: number | null,
+  unit: string | null,
   price: { estimatedSingleUnitPrice: number; estimatedGramPrice: number }
 ): number | null => {
   if (!quantity) return price.estimatedSingleUnitPrice
