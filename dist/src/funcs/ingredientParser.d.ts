@@ -1,3 +1,3 @@
-import { IngredientResponse } from '@jclind/ingredient-parser';
+import { IngredientResponse } from '../../types.js';
 declare const ingredientParser: (ingrString: string, spoonacularAPIKey: string) => Promise<IngredientResponse>;
 export default ingredientParser;

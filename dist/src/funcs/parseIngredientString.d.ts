@@ -1,2 +1,2 @@
-import { ParsedIngredient } from '@jclind/ingredient-parser';
+import { ParsedIngredient } from '../../types.js';
 export declare const parseIngredientString: (ingrStr: string) => ParsedIngredient;

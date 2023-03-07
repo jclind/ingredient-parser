@@ -2,10 +2,10 @@ import { calculatePrice } from './calculatePrice.js'
 import { parseIngredientString } from './parseIngredientString.js'
 import { getIngredientInfo } from './getIngredientInfo.js'
 import {
+  IngredientData,
   IngredientResponse,
   ParsedIngredient,
-  IngredientData,
-} from '@jclind/ingredient-parser'
+} from '../../types.js'
 
 const ingredientParser = async (
   ingrString: string,

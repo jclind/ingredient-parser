@@ -15,6 +15,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ingredientParser = void 0;
-const ingredientParser_1 = require("./funcs/ingredientParser");
+const ingredientParser_1 = require("./src/funcs/ingredientParser");
 exports.ingredientParser = ingredientParser_1.default;
-__exportStar(require("@jclind/ingredient-parser"), exports);
+__exportStar(require("./types"), exports);
