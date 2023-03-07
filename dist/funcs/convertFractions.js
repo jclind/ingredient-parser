@@ -1,4 +1,7 @@
-export const convertFractions = (str) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertFractions = void 0;
+const convertFractions = (str) => {
     const fractions = {
         '¼': '1/4',
         '½': '1/2',
@@ -25,3 +28,4 @@ export const convertFractions = (str) => {
     }
     return str;
 };
+exports.convertFractions = convertFractions;
