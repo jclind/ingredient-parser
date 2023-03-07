@@ -1,6 +1,5 @@
-import { IngredientData } from '../../index.js'
 import { mongoHttp, spoonacularHttp } from './http.js'
-
+import { IngredientData } from '@jclind/ingredient-parser'
 export const checkIngredient = async (name: string) => {
   return await mongoHttp.get(`checkIngredient?name=${name}`)
 }

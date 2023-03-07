@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseIngredientString = void 0;
 const recipe_ingredient_parser_v3_1 = require("recipe-ingredient-parser-v3");
+// import { ParsedIngredient } from '../../index.js'
 const convertFractions_js_1 = require("./convertFractions.js");
 const parseIngredientString = (ingrStr) => {
     var _a, _b;

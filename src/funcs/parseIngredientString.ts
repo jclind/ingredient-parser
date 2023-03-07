@@ -1,5 +1,6 @@
+import { ParsedIngredient } from '@jclind/ingredient-parser'
 import { parse } from 'recipe-ingredient-parser-v3'
-import { ParsedIngredient } from '../../index.js'
+// import { ParsedIngredient } from '../../index.js'
 import { convertFractions } from './convertFractions.js'
 
 export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
@@ -46,7 +47,10 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     }
   })
 
-  const parsedIngrRes: ParsedIngredient = parse(prepIngrText, 'eng')
+  const parsedIngrRes: Omit<
+    ParsedIngredient,
+    'originalIngredientString' | 'comment'
+  > = parse(prepIngrText, 'eng')
 
   if (!parsedIngrRes.ingredient) {
     return { ...parsedIngrRes, originalIngredientString: ingrStr, comment }

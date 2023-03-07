@@ -1,11 +1,11 @@
-import {
-  IngredientData,
-  IngredientResponse,
-  ParsedIngredient,
-} from '../../index.js'
 import { calculatePrice } from './calculatePrice.js'
 import { parseIngredientString } from './parseIngredientString.js'
 import { getIngredientInfo } from './getIngredientInfo.js'
+import {
+  IngredientResponse,
+  ParsedIngredient,
+  IngredientData,
+} from '@jclind/ingredient-parser'
 
 const ingredientParser = async (
   ingrString: string,

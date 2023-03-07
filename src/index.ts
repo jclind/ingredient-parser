@@ -1,13 +1,5 @@
-import ingredientParser from './funcs/ingredientParser.js'
-import {
-  ParsedIngredient as ParsedIngredientType,
-  IngredientData as IngredientDataType,
-  IngredientResponse as IngredientResponseType,
-} from '../index.js'
+import ingredientParser from './funcs/ingredientParser'
 
-export {
-  ingredientParser,
-  ParsedIngredientType,
-  IngredientDataType,
-  IngredientResponseType,
-}
+export * from '@jclind/ingredient-parser'
+
+export { ingredientParser }
