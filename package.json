@@ -1,6 +1,6 @@
 {
   "name": "@jclind/ingredient-parser",
-  "version": "1.0.39",
+  "version": "1.0.40",
   "description": "Parses given sentence including ingredient information and attempts to return quantity, measurement and ingredient data",
   "keywords": [
     "recipe",
