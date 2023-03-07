@@ -1,6 +1,6 @@
 {
   "name": "@jclind/ingredient-parser",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "description": "Parses given sentence including ingredient information and attempts to return quantity, measurement and ingredient data",
   "keywords": [
     "recipe",
@@ -9,10 +9,11 @@
     "units"
   ],
   "main": "dist/index.js",
-  "types": "types/index.d.ts",
-  "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc"
+    "build": "del dist\\ && tsc"
   },
   "repository": {
     "type": "git",

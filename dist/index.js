@@ -14,9 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.test = exports.ingredientParser = void 0;
+exports.ingredientParser = void 0;
 const ingredientParser_1 = require("./funcs/ingredientParser");
 exports.ingredientParser = ingredientParser_1.default;
-const test = () => console.log(test);
-exports.test = test;
 __exportStar(require("@jclind/ingredient-parser"), exports);
