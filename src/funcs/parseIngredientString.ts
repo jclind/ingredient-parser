@@ -49,7 +49,7 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
       } else if (match === 'tablespoon') {
         return 'tbsp'
       } else {
-        return 'tbsps'
+        return 'tbsp'
       }
     }
   )
