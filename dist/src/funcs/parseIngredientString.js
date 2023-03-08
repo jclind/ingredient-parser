@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseIngredientString = void 0;
-const recipe_ingredient_parser_v3_1 = require("recipe-ingredient-parser-v3");
 // import { ParsedIngredient } from '../../index.js'
 const convertFractions_js_1 = require("./convertFractions.js");
+const parseStringConsecutiveTs_js_1 = require("./parseStringConsecutiveTs.js");
 const parseIngredientString = (ingrStr) => {
     var _a, _b;
     // Define regular expressions for text inside parentheses and text before the first comma
@@ -41,7 +41,8 @@ const parseIngredientString = (ingrStr) => {
             return 'pounds';
         }
     });
-    const parsedIngrRes = (0, recipe_ingredient_parser_v3_1.parse)(prepIngrText, 'eng');
+    const parsedIngrRes = (0, parseStringConsecutiveTs_js_1.parseStringConsecutiveTs)(prepIngrText);
+    console.log(parsedIngrRes);
     if (!parsedIngrRes.ingredient) {
         return Object.assign(Object.assign({}, parsedIngrRes), { originalIngredientString: ingrStr, comment });
     }

@@ -10,6 +10,7 @@
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "commonjs",
   "files": [
     "dist"
   ],
@@ -27,7 +28,7 @@
   },
   "homepage": "https://github.com/jclind/ingredient-parser#readme",
   "dependencies": {
-    "@jclind/ingredient-unit-converter": "^1.0.2",
+    "@jclind/ingredient-unit-converter": "^1.0.5",
     "@types/axios": "^0.14.0",
     "convert-units": "^2.3.4",
     "dotenv": "^16.0.3",

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculatePrice = void 0;
-//@ts-ignore
 const ingredient_unit_converter_1 = require("@jclind/ingredient-unit-converter");
 const calculatePrice = (quantity, unit, price) => {
     if (!quantity)
@@ -15,7 +14,7 @@ const calculatePrice = (quantity, unit, price) => {
     catch (error) {
         return null;
     }
-    if (!convertedUnit || convertedUnit.error)
+    if (!convertedUnit || 'error' in convertedUnit)
         return price.estimatedSingleUnitPrice * quantity;
     const convertedGrams = Number(convertedUnit.quantity);
     const total = convertedGrams * price.estimatedGramPrice;

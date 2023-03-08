@@ -17,4 +17,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ingredientParser = void 0;
 const ingredientParser_1 = require("./src/funcs/ingredientParser");
 exports.ingredientParser = ingredientParser_1.default;
+// const test = async () => {
+//   const ingrData = await ingredientParser(
+//     '1 lb boneless skinless chicken breast',
+//     'e8064d74f9804ebd82a947fb7b86189b'
+//   )
+//   return console.log(ingrData)
+// }
+// test()
 __exportStar(require("./types"), exports);

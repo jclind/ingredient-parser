@@ -1,4 +1,3 @@
-//@ts-ignore
 import { converter } from '@jclind/ingredient-unit-converter'
 
 export const calculatePrice = (
@@ -16,7 +15,7 @@ export const calculatePrice = (
     return null
   }
 
-  if (!convertedUnit || convertedUnit.error)
+  if (!convertedUnit || 'error' in convertedUnit)
     return price.estimatedSingleUnitPrice * quantity
 
   const convertedGrams = Number(convertedUnit.quantity)

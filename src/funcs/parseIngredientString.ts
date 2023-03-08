@@ -2,6 +2,7 @@ import { parse } from 'recipe-ingredient-parser-v3'
 import { ParsedIngredient } from '../../types.js'
 // import { ParsedIngredient } from '../../index.js'
 import { convertFractions } from './convertFractions.js'
+import { parseStringConsecutiveTs } from './parseStringConsecutiveTs.js'
 
 export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
   // Define regular expressions for text inside parentheses and text before the first comma
@@ -47,10 +48,8 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     }
   })
 
-  const parsedIngrRes: Omit<
-    ParsedIngredient,
-    'originalIngredientString' | 'comment'
-  > = parse(prepIngrText, 'eng')
+  const parsedIngrRes = parseStringConsecutiveTs(prepIngrText)
+  console.log(parsedIngrRes)
 
   if (!parsedIngrRes.ingredient) {
     return { ...parsedIngrRes, originalIngredientString: ingrStr, comment }
