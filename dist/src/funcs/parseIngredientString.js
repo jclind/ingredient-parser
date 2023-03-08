@@ -32,13 +32,18 @@ const parseIngredientString = (ingrStr) => {
         ingrText = (0, convertFractions_js_1.convertFractions)(ingrStr.replace(parenRegex, '').trim());
         comment = parenthesesStr.trim();
     }
-    const prepIngrText = ingrText.replace(/\b(lb|lbs)\b/g, match => {
-        // Replace lb or lbs with pound or pounds respectively
+    const prepIngrText = ingrText.replace(/\b(lb|lbs|tablespoon|tablespoon)\b/gi, match => {
         if (match === 'lb') {
             return 'pound';
         }
-        else {
+        else if (match === 'lbs') {
             return 'pounds';
+        }
+        else if (match === 'tablespoon') {
+            return 'tbsp';
+        }
+        else {
+            return 'tbsps';
         }
     });
     const parsedIngrRes = (0, parseStringConsecutiveTs_js_1.parseStringConsecutiveTs)(prepIngrText);

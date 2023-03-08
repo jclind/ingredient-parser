@@ -39,14 +39,20 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     comment = parenthesesStr.trim()
   }
 
-  const prepIngrText = ingrText.replace(/\b(lb|lbs)\b/g, match => {
-    // Replace lb or lbs with pound or pounds respectively
-    if (match === 'lb') {
-      return 'pound'
-    } else {
-      return 'pounds'
+  const prepIngrText = ingrText.replace(
+    /\b(lb|lbs|tablespoon|tablespoon)\b/gi,
+    match => {
+      if (match === 'lb') {
+        return 'pound'
+      } else if (match === 'lbs') {
+        return 'pounds'
+      } else if (match === 'tablespoon') {
+        return 'tbsp'
+      } else {
+        return 'tbsps'
+      }
     }
-  })
+  )
 
   const parsedIngrRes = parseStringConsecutiveTs(prepIngrText)
   console.log(parsedIngrRes)
