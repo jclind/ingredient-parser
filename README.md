@@ -14,7 +14,8 @@ import { parseIngredient } from '@jclind/ingredient-parser';
 
 const ingredientString = '1 cup rice, washed';
 const apiKey = 'YOUR_API_KEY';
-parseIngredient(ingredientString, apiKey);
+const options = { returnNutritionData: true };
+parseIngredient(ingredientString, apiKey, options);
 ```
 Returns an object `{id: (randomly generated id unique to every request), parsedIngredient, ingredientData}` with the following properties/values.
 
@@ -47,7 +48,7 @@ Returns an object `{id: (randomly generated id unique to every request), parsedI
     aisle: 'Pasta and Rice',
     image: 'uncooked-white-rice.png',
     imagePath: 'https://spoonacular.com/cdn/ingredients_100x100/uncooked-white-rice.png',
-    nutrition: {
+    nutrition?: {
       nutrients: [Array],
       properties: [Array],
       flavonoids: [Array],
@@ -65,6 +66,7 @@ Returns an object `{id: (randomly generated id unique to every request), parsedI
 
 - `ingredientString` (string) [required] : preferably formatted as such: (quantity) (unit) (ingredient), (comment separated by a comment) i.e. 2 cups onions, diced
 - `SPOONACULAR_API_KEY` (string) [required] : your unique [spoonacular](https://spoonacular.com/food-api) API key.
+- `options` (object) [optional] : an object containing additional options. Currently, the only supported option is `returnNutritionData`, which, if set to `true`, will include nutrition data in the ingredientData object.
 
 Note: You need to sign up for a free API key from [spoonacular website](https://spoonacular.com/food-api).
 
