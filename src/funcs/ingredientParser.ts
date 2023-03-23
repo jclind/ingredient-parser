@@ -4,12 +4,14 @@ import { getIngredientInfo } from './getIngredientInfo.js'
 import {
   IngredientData,
   IngredientResponse,
+  OptionsType,
   ParsedIngredient,
 } from '../../types.js'
 
 const ingredientParser = async (
   ingrString: string,
-  spoonacularAPIKey: string
+  spoonacularAPIKey: string,
+  options: OptionsType
 ): Promise<IngredientResponse> => {
   // const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
   const parsedIngr: ParsedIngredient = parseIngredientString(ingrString)
@@ -37,6 +39,7 @@ const ingredientParser = async (
       unitLong,
       original,
       id,
+      nutrition,
       ...reducedIngrData
     } = ingrData
 
@@ -51,6 +54,7 @@ const ingredientParser = async (
       ...reducedIngrData,
       imagePath,
       totalPriceUSACents: totalPrice,
+      ...(options?.returnNutritionData && { nutrition }),
     }
 
     return {

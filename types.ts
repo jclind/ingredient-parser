@@ -79,3 +79,7 @@ export interface WeightPerServing {
   amount: number
   unit: string
 }
+
+export type OptionsType = {
+  returnNutritionData: boolean
+}
