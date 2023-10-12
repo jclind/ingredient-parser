@@ -25,7 +25,7 @@ const parseIngredientString_js_1 = require("./parseIngredientString.js");
 const getIngredientInfo_js_1 = require("./getIngredientInfo.js");
 const ingredientParser = (ingrString, spoonacularAPIKey, options) => __awaiter(void 0, void 0, void 0, function* () {
     // const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
-    const parsedIngr = (0, parseIngredientString_js_1.parseIngredientString)(ingrString.toLowerCase());
+    const parsedIngr = (0, parseIngredientString_js_1.parseIngredientString)(ingrString);
     let ingrData = null;
     try {
         ingrData = yield (0, getIngredientInfo_js_1.getIngredientInfo)(parsedIngr.ingredient || '', spoonacularAPIKey);
