@@ -20,7 +20,7 @@ const removeConsecutiveTs = (str) => {
 const replaceModifiedWords = (words, str) => {
     let updatedStr = str;
     words.forEach(({ original, modified }) => {
-        updatedStr = updatedStr.replace(modified, original);
+        updatedStr = updatedStr.replace(modified.toLowerCase(), original.toLowerCase());
     });
     return updatedStr;
 };

@@ -27,7 +27,10 @@ const replaceModifiedWords = (
 ): string => {
   let updatedStr = str
   words.forEach(({ original, modified }) => {
-    updatedStr = updatedStr.replace(modified, original)
+    updatedStr = updatedStr.replace(
+      modified.toLowerCase(),
+      original.toLowerCase()
+    )
   })
   return updatedStr
 }
