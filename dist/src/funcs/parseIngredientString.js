@@ -43,11 +43,10 @@ const parseIngredientString = (ingrStr) => {
             return 'tbsp';
         }
         else {
-            return 'tbsps';
+            return 'tbsp';
         }
     });
     const parsedIngrRes = (0, parseStringConsecutiveTs_js_1.parseStringConsecutiveTs)(prepIngrText);
-    console.log(parsedIngrRes);
     if (!parsedIngrRes.ingredient) {
         return Object.assign(Object.assign({}, parsedIngrRes), { originalIngredientString: ingrStr, comment });
     }

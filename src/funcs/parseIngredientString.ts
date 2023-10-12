@@ -55,7 +55,6 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
   )
 
   const parsedIngrRes = parseStringConsecutiveTs(prepIngrText)
-  console.log(parsedIngrRes)
 
   if (!parsedIngrRes.ingredient) {
     return { ...parsedIngrRes, originalIngredientString: ingrStr, comment }

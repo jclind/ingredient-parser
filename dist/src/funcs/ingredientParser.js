@@ -23,7 +23,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const calculatePrice_js_1 = require("./calculatePrice.js");
 const parseIngredientString_js_1 = require("./parseIngredientString.js");
 const getIngredientInfo_js_1 = require("./getIngredientInfo.js");
-const ingredientParser = (ingrString, spoonacularAPIKey) => __awaiter(void 0, void 0, void 0, function* () {
+const ingredientParser = (ingrString, spoonacularAPIKey, options) => __awaiter(void 0, void 0, void 0, function* () {
     // const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
     const parsedIngr = (0, parseIngredientString_js_1.parseIngredientString)(ingrString);
     let ingrData = null;
@@ -38,10 +38,10 @@ const ingredientParser = (ingrString, spoonacularAPIKey) => __awaiter(void 0, vo
         };
     }
     if (parsedIngr.ingredient && ingrData) {
-        const { estimatedPrices, meta, categoryPath, unit, unitShort, unitLong, original, id } = ingrData, reducedIngrData = __rest(ingrData, ["estimatedPrices", "meta", "categoryPath", "unit", "unitShort", "unitLong", "original", "id"]);
+        const { estimatedPrices, meta, categoryPath, unit, unitShort, unitLong, original, id, nutrition } = ingrData, reducedIngrData = __rest(ingrData, ["estimatedPrices", "meta", "categoryPath", "unit", "unitShort", "unitLong", "original", "id", "nutrition"]);
         const totalPrice = (0, calculatePrice_js_1.calculatePrice)(parsedIngr.quantity, parsedIngr.unit, estimatedPrices);
         const imagePath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`;
-        const updatedIngrData = Object.assign(Object.assign({}, reducedIngrData), { imagePath, totalPriceUSACents: totalPrice });
+        const updatedIngrData = Object.assign(Object.assign(Object.assign({}, reducedIngrData), { imagePath, totalPriceUSACents: totalPrice }), ((options === null || options === void 0 ? void 0 : options.returnNutritionData) && { nutrition }));
         return {
             ingredientData: updatedIngrData,
             parsedIngredient: parsedIngr,

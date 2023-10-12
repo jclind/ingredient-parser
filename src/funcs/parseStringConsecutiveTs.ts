@@ -40,17 +40,15 @@ type ParsedIngredientOmitType = Omit<
 export const parseStringConsecutiveTs = (
   ingrStr: string
 ): ParsedIngredientOmitType => {
-  const ingrStrToLower = ingrStr.toLowerCase()
-  // Fixes bug where words with 'tt' in them will replace
-  const removeTTsIngrName = ingrStrToLower.replace(/t{2,}/g, '')
-  const modifiedWords = removeConsecutiveTs(ingrStrToLower)
+  // const ingrStrToLower = ingrStr.toLowerCase()
+  const removeTTsIngrName = ingrStr.replace(/t{2,}/g, '')
+  const modifiedWords = removeConsecutiveTs(ingrStr)
 
   if (modifiedWords.length > 0) {
     const parsedIngrNoTs: ParsedIngredientOmitType = parse(
       removeTTsIngrName,
       'eng'
     )
-    console.log('parsedIngrNoTs', parsedIngrNoTs)
 
     const correctIngrStr: string | null = replaceModifiedWords(
       modifiedWords,
@@ -63,6 +61,6 @@ export const parseStringConsecutiveTs = (
     }
     return parsedIngr
   } else {
-    return parse(ingrStrToLower, 'eng')
+    return parse(ingrStr, 'eng')
   }
 }
