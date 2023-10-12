@@ -11,7 +11,7 @@ import {
 const ingredientParser = async (
   ingrString: string,
   spoonacularAPIKey: string,
-  options: OptionsType
+  options?: OptionsType
 ): Promise<IngredientResponse> => {
   // const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
   const parsedIngr: ParsedIngredient = parseIngredientString(
