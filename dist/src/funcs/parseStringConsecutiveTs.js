@@ -34,6 +34,7 @@ const parseStringConsecutiveTs = (ingrStr) => {
         const parsedIngrNoTs = (0, recipe_ingredient_parser_v3_1.parse)(removeTTsIngrName, 'eng');
         console.log(parsedIngrNoTs);
         const correctIngrStr = replaceModifiedWords(modifiedWords, (_a = parsedIngrNoTs.ingredient) !== null && _a !== void 0 ? _a : '');
+        console.log(correctIngrStr);
         const parsedIngr = Object.assign(Object.assign({}, parsedIngrNoTs), { ingredient: correctIngrStr });
         return parsedIngr;
     }
