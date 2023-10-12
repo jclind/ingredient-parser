@@ -44,16 +44,22 @@ export const parseStringConsecutiveTs = (
   const removeTTsIngrName = ingrStr.replace(/t{2,}/g, '')
   const modifiedWords = removeConsecutiveTs(ingrStr)
 
+  console.log(modifiedWords)
+
   if (modifiedWords.length > 0) {
     const parsedIngrNoTs: ParsedIngredientOmitType = parse(
       removeTTsIngrName,
       'eng'
     )
 
+    console.log(parsedIngrNoTs)
+
     const correctIngrStr: string | null = replaceModifiedWords(
       modifiedWords,
       parsedIngrNoTs.ingredient ?? ''
     )
+
+    console.log(correctIngrStr)
 
     const parsedIngr: ParsedIngredientOmitType = {
       ...parsedIngrNoTs,

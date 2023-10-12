@@ -14,7 +14,9 @@ const ingredientParser = async (
   options: OptionsType
 ): Promise<IngredientResponse> => {
   // const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
-  const parsedIngr: ParsedIngredient = parseIngredientString(ingrString)
+  const parsedIngr: ParsedIngredient = parseIngredientString(
+    ingrString.toLowerCase()
+  )
 
   let ingrData = null
   try {
