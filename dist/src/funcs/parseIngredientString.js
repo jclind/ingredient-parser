@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseIngredientString = void 0;
-// import { ParsedIngredient } from '../../index.js'
 const convertFractions_js_1 = require("./convertFractions.js");
 const parseStringConsecutiveTs_js_1 = require("./parseStringConsecutiveTs.js");
 const parseIngredientString = (ingrStr) => {
@@ -32,15 +31,12 @@ const parseIngredientString = (ingrStr) => {
         ingrText = (0, convertFractions_js_1.convertFractions)(ingrStr.replace(parenRegex, '').trim());
         comment = parenthesesStr.trim();
     }
-    const prepIngrText = ingrText.replace(/\b(lb|lbs|tablespoon|tablespoon)\b/gi, match => {
+    const prepIngrText = ingrText.replace(/\b(lb|lbs|tablespoons|tablespoon)\b/gi, match => {
         if (match === 'lb') {
             return 'pound';
         }
         else if (match === 'lbs') {
             return 'pounds';
-        }
-        else if (match === 'tablespoon') {
-            return 'tbsp';
         }
         else {
             return 'tbsp';

@@ -1,5 +1,5 @@
 import { parse } from 'recipe-ingredient-parser-v3'
-import { ParsedIngredient } from '../../types'
+import { ParsedIngredient } from '../../types.js'
 
 // returns words that have consecutive t's with those t's removed in a string array
 const removeConsecutiveTs = (

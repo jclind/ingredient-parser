@@ -7,8 +7,15 @@ export async function getIngredientInfo(
 ) {
   const ingrNameLower = ingrName.toLowerCase()
   if (!ingrNameLower) throw new Error('Ingredient Invalid')
-  const mongoIngrData = await checkIngredient(ingrNameLower)
-  if (!mongoIngrData.data) {
+
+  let mongoIngrData: any = null
+  try {
+    mongoIngrData = await checkIngredient(ingrNameLower)
+  } catch {
+    // MongoDB cache unavailable — fall through to Spoonacular
+  }
+
+  if (!mongoIngrData?.data) {
     const ingrData = await getSpoonacularIngrData(
       ingrNameLower,
       spoonacularAPIKey

@@ -1,6 +1,4 @@
-import { parse } from 'recipe-ingredient-parser-v3'
 import { ParsedIngredient } from '../../types.js'
-// import { ParsedIngredient } from '../../index.js'
 import { convertFractions } from './convertFractions.js'
 import { parseStringConsecutiveTs } from './parseStringConsecutiveTs.js'
 
@@ -40,14 +38,12 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
   }
 
   const prepIngrText = ingrText.replace(
-    /\b(lb|lbs|tablespoon|tablespoon)\b/gi,
+    /\b(lb|lbs|tablespoons|tablespoon)\b/gi,
     match => {
       if (match === 'lb') {
         return 'pound'
       } else if (match === 'lbs') {
         return 'pounds'
-      } else if (match === 'tablespoon') {
-        return 'tbsp'
       } else {
         return 'tbsp'
       }

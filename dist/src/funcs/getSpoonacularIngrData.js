@@ -9,11 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSpoonacularIngrData = void 0;
+exports.getSpoonacularIngrData = getSpoonacularIngrData;
 const requests_js_1 = require("../api/requests.js");
 function getSpoonacularIngrData(name, spoonacularAPIKey) {
-    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c;
         const searchedIngr = yield (0, requests_js_1.searchIngredient)(name, spoonacularAPIKey);
         if (searchedIngr.error)
             return searchedIngr;
@@ -33,4 +33,3 @@ function getSpoonacularIngrData(name, spoonacularAPIKey) {
         return Object.assign(Object.assign({}, mongoDBIngrData), { _id });
     });
 }
-exports.getSpoonacularIngrData = getSpoonacularIngrData;
