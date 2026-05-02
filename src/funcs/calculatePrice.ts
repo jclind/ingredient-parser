@@ -5,7 +5,7 @@ export const calculatePrice = (
   unit: string | null,
   price: { estimatedSingleUnitPrice: number; estimatedGramPrice: number }
 ): number | null => {
-  if (!quantity) return price.estimatedSingleUnitPrice
+  if (quantity === null) return price.estimatedSingleUnitPrice
   if (!unit) return price.estimatedSingleUnitPrice * quantity
 
   let convertedUnit

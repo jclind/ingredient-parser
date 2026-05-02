@@ -80,6 +80,9 @@ export interface WeightPerServing {
   unit: string
 }
 
+export type SpoonacularImageSize = '100x100' | '250x250' | '500x500'
+
 export type OptionsType = {
-  returnNutritionData: boolean
+  returnNutritionData?: boolean
+  imageSize?: SpoonacularImageSize
 }

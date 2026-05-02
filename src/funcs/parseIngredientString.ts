@@ -37,17 +37,32 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     comment = parenthesesStr.trim()
   }
 
+  const unitNormalizations: Record<string, string> = {
+    tablespoons: 'tbsp',
+    tablespoon: 'tbsp',
+    teaspoons: 'teaspoon',
+    milliliters: 'milliliter',
+    millilitres: 'milliliter',
+    kilograms: 'kilogram',
+    ounces: 'ounce',
+    pounds: 'pound',
+    grams: 'gram',
+    tsps: 'teaspoon',
+    tsp: 'teaspoon',
+    lbs: 'pounds',
+    oz: 'ounce',
+    kg: 'kilogram',
+    ml: 'milliliter',
+    lb: 'pound',
+    g: 'gram',
+  }
+  const unitPattern = new RegExp(
+    '\\b(' + Object.keys(unitNormalizations).join('|') + ')\\b',
+    'gi'
+  )
   const prepIngrText = ingrText.replace(
-    /\b(lb|lbs|tablespoons|tablespoon)\b/gi,
-    match => {
-      if (match === 'lb') {
-        return 'pound'
-      } else if (match === 'lbs') {
-        return 'pounds'
-      } else {
-        return 'tbsp'
-      }
-    }
+    unitPattern,
+    match => unitNormalizations[match.toLowerCase()] ?? match
   )
 
   const parsedIngrRes = parseStringConsecutiveTs(prepIngrText)
@@ -58,6 +73,12 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
 
   const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned']
   const regex = new RegExp('\\b(' + wordsToRemove.join('|') + ')\\b', 'gi')
+
+  const descriptorSet = new Set(wordsToRemove.map(w => w.toLowerCase()))
+  const unit =
+    parsedIngrRes.unit && descriptorSet.has(parsedIngrRes.unit.toLowerCase())
+      ? null
+      : parsedIngrRes.unit
 
   const formattedIngrName = parsedIngrRes.ingredient
     .trim()
@@ -70,6 +91,7 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
 
   return {
     ...parsedIngrRes,
+    unit,
     ingredient: formattedIngrName,
     originalIngredientString: ingrStr,
     comment,

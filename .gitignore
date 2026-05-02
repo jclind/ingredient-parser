@@ -5,3 +5,13 @@
 # Dependency directory
 node_modules
 bower_components
+
+# macOS duplicate dist files
+dist/index 2.js
+dist/index 3.js
+dist/index.d 2.ts
+dist/index.d 3.ts
+dist/types 2.js
+dist/types 3.js
+dist/types.d 2.ts
+dist/types.d 3.ts

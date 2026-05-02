@@ -27,8 +27,8 @@ export async function getSpoonacularIngrData(
 
   if (ingrDataGram.error || ingrDataSingleUnit.error) return ingrDataGram
 
-  const estimatedGramPrice = ingrDataGram.data.estimatedCost.value
-  const estimatedSingleUnitPrice = ingrDataSingleUnit.data.estimatedCost.value
+  const estimatedGramPrice = ingrDataGram.data.estimatedCost?.value ?? 0
+  const estimatedSingleUnitPrice = ingrDataSingleUnit.data.estimatedCost?.value ?? 0
 
   const ingrData = {
     ...ingrDataGram.data,

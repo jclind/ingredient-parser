@@ -49,7 +49,8 @@ const ingredientParser = async (
       estimatedPrices
     )
 
-    const imagePath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`
+    const imageSize = options?.imageSize ?? '100x100'
+    const imagePath = `https://spoonacular.com/cdn/ingredients_${imageSize}/${reducedIngrData.image}`
     const updatedIngrData: IngredientData = {
       ...reducedIngrData,
       imagePath,
