@@ -8,6 +8,7 @@ export const spoonacularHttp = axios.create({
   headers: {
     'Content-type': 'application/json',
   },
+  timeout: 8000,
 })
 
 export const createIngredientServerHttp = (serverUrl?: string) =>
@@ -16,4 +17,5 @@ export const createIngredientServerHttp = (serverUrl?: string) =>
     headers: {
       'Content-type': 'application/json',
     },
+    timeout: 8000,
   })

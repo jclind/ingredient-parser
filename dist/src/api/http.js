@@ -11,11 +11,13 @@ exports.spoonacularHttp = axios_1.default.create({
     headers: {
         'Content-type': 'application/json',
     },
+    timeout: 8000,
 });
 const createIngredientServerHttp = (serverUrl) => axios_1.default.create({
     baseURL: serverUrl || DEFAULT_SERVER_URL,
     headers: {
         'Content-type': 'application/json',
     },
+    timeout: 8000,
 });
 exports.createIngredientServerHttp = createIngredientServerHttp;
