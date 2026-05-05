@@ -8,23 +8,14 @@ export async function getSpoonacularIngrData(
   spoonacularAPIKey: string
 ) {
   const searchedIngr = await searchIngredient(name, spoonacularAPIKey)
-  if (searchedIngr.error) return searchedIngr
   const ingrId = searchedIngr?.data?.results[0]?.id ?? null
 
   if (!ingrId) throw new Error(`No Data Found, unknown ingredient: ${name}`)
 
-  const ingrDataGram = await getIngredientInformation(
-    ingrId,
-    true,
-    spoonacularAPIKey
-  )
-  const ingrDataSingleUnit = await getIngredientInformation(
-    ingrId,
-    false,
-    spoonacularAPIKey
-  )
-
-  if (ingrDataGram.error || ingrDataSingleUnit.error) return ingrDataGram
+  const [ingrDataGram, ingrDataSingleUnit] = await Promise.all([
+    getIngredientInformation(ingrId, true, spoonacularAPIKey),
+    getIngredientInformation(ingrId, false, spoonacularAPIKey),
+  ])
 
   const estimatedGramPrice = ingrDataGram.data.estimatedCost?.value ?? 0
   const estimatedSingleUnitPrice = ingrDataSingleUnit.data.estimatedCost?.value ?? 0

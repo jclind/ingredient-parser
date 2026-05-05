@@ -15,15 +15,13 @@ function getSpoonacularIngrData(name, spoonacularAPIKey) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a, _b, _c, _d, _e, _f, _g;
         const searchedIngr = yield (0, requests_js_1.searchIngredient)(name, spoonacularAPIKey);
-        if (searchedIngr.error)
-            return searchedIngr;
         const ingrId = (_c = (_b = (_a = searchedIngr === null || searchedIngr === void 0 ? void 0 : searchedIngr.data) === null || _a === void 0 ? void 0 : _a.results[0]) === null || _b === void 0 ? void 0 : _b.id) !== null && _c !== void 0 ? _c : null;
         if (!ingrId)
             throw new Error(`No Data Found, unknown ingredient: ${name}`);
-        const ingrDataGram = yield (0, requests_js_1.getIngredientInformation)(ingrId, true, spoonacularAPIKey);
-        const ingrDataSingleUnit = yield (0, requests_js_1.getIngredientInformation)(ingrId, false, spoonacularAPIKey);
-        if (ingrDataGram.error || ingrDataSingleUnit.error)
-            return ingrDataGram;
+        const [ingrDataGram, ingrDataSingleUnit] = yield Promise.all([
+            (0, requests_js_1.getIngredientInformation)(ingrId, true, spoonacularAPIKey),
+            (0, requests_js_1.getIngredientInformation)(ingrId, false, spoonacularAPIKey),
+        ]);
         const estimatedGramPrice = (_e = (_d = ingrDataGram.data.estimatedCost) === null || _d === void 0 ? void 0 : _d.value) !== null && _e !== void 0 ? _e : 0;
         const estimatedSingleUnitPrice = (_g = (_f = ingrDataSingleUnit.data.estimatedCost) === null || _f === void 0 ? void 0 : _f.value) !== null && _g !== void 0 ? _g : 0;
         const ingrData = Object.assign(Object.assign({}, ingrDataGram.data), { name, ingredientId: ingrId, estimatedPrices: { estimatedGramPrice, estimatedSingleUnitPrice } });
