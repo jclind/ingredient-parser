@@ -9,12 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setMongoDBIngrData = exports.getIngredientInformation = exports.searchIngredient = exports.checkIngredient = void 0;
+exports.getIngredientInformation = exports.searchIngredient = exports.parseAndEnrich = void 0;
 const http_js_1 = require("./http.js");
-const checkIngredient = (name) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield http_js_1.mongoHttp.get(`checkIngredient?name=${name}`);
+const parseAndEnrich = (ingredientString, spoonacularApiKey, serverUrl) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const serverHttp = (0, http_js_1.createIngredientServerHttp)(serverUrl);
+    const response = yield serverHttp.post('/parse', {
+        ingredientString,
+        spoonacularApiKey,
+    });
+    return (_a = response.data.data) !== null && _a !== void 0 ? _a : null;
 });
-exports.checkIngredient = checkIngredient;
+exports.parseAndEnrich = parseAndEnrich;
 const searchIngredient = (name, spoonacularAPIKey) => __awaiter(void 0, void 0, void 0, function* () {
     let searchedIngr;
     try {
@@ -49,7 +55,3 @@ const getIngredientInformation = (ingrId, unit, spoonacularAPIKey) => __awaiter(
     return ingrData;
 });
 exports.getIngredientInformation = getIngredientInformation;
-const setMongoDBIngrData = (data) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield http_js_1.mongoHttp.post(`addIngredient`, data);
-});
-exports.setMongoDBIngrData = setMongoDBIngrData;

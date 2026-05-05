@@ -24,11 +24,12 @@ const calculatePrice_js_1 = require("./calculatePrice.js");
 const parseIngredientString_js_1 = require("./parseIngredientString.js");
 const getIngredientInfo_js_1 = require("./getIngredientInfo.js");
 const ingredientParser = (ingrString, spoonacularAPIKey, options) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     // const parsedIngr: ParsedIngredient = parse(ingrString, 'eng')
     const parsedIngr = (0, parseIngredientString_js_1.parseIngredientString)(ingrString);
     let ingrData = null;
     try {
-        ingrData = yield (0, getIngredientInfo_js_1.getIngredientInfo)(parsedIngr.ingredient || '', spoonacularAPIKey);
+        ingrData = yield (0, getIngredientInfo_js_1.getIngredientInfo)(parsedIngr.ingredient || '', spoonacularAPIKey, options === null || options === void 0 ? void 0 : options.serverUrl);
     }
     catch (error) {
         return {
@@ -39,9 +40,12 @@ const ingredientParser = (ingrString, spoonacularAPIKey, options) => __awaiter(v
     }
     if (parsedIngr.ingredient && ingrData) {
         const { estimatedPrices, meta, categoryPath, unit, unitShort, unitLong, original, id, nutrition } = ingrData, reducedIngrData = __rest(ingrData, ["estimatedPrices", "meta", "categoryPath", "unit", "unitShort", "unitLong", "original", "id", "nutrition"]);
-        const totalPrice = (0, calculatePrice_js_1.calculatePrice)(parsedIngr.quantity, parsedIngr.unit, estimatedPrices);
-        const imagePath = `https://spoonacular.com/cdn/ingredients_100x100/${reducedIngrData.image}`;
-        const updatedIngrData = Object.assign(Object.assign(Object.assign({}, reducedIngrData), { imagePath, totalPriceUSACents: totalPrice }), ((options === null || options === void 0 ? void 0 : options.returnNutritionData) && { nutrition }));
+        const totalPrice = estimatedPrices
+            ? (0, calculatePrice_js_1.calculatePrice)(parsedIngr.quantity, parsedIngr.unit, estimatedPrices)
+            : null;
+        const imageSize = (_a = options === null || options === void 0 ? void 0 : options.imageSize) !== null && _a !== void 0 ? _a : '100x100';
+        const imagePath = `https://spoonacular.com/cdn/ingredients_${imageSize}/${reducedIngrData.image}`;
+        const updatedIngrData = Object.assign(Object.assign(Object.assign(Object.assign({}, reducedIngrData), { imagePath }), (totalPrice !== null && { totalPriceUSACents: totalPrice })), ((options === null || options === void 0 ? void 0 : options.returnNutritionData) && { nutrition }));
         return {
             ingredientData: updatedIngrData,
             parsedIngredient: parsedIngr,

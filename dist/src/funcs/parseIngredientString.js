@@ -31,23 +31,37 @@ const parseIngredientString = (ingrStr) => {
         ingrText = (0, convertFractions_js_1.convertFractions)(ingrStr.replace(parenRegex, '').trim());
         comment = parenthesesStr.trim();
     }
-    const prepIngrText = ingrText.replace(/\b(lb|lbs|tablespoons|tablespoon)\b/gi, match => {
-        if (match === 'lb') {
-            return 'pound';
-        }
-        else if (match === 'lbs') {
-            return 'pounds';
-        }
-        else {
-            return 'tbsp';
-        }
-    });
+    const unitNormalizations = {
+        tablespoons: 'tbsp',
+        tablespoon: 'tbsp',
+        teaspoons: 'teaspoon',
+        milliliters: 'milliliter',
+        millilitres: 'milliliter',
+        kilograms: 'kilogram',
+        ounces: 'ounce',
+        pounds: 'pound',
+        grams: 'gram',
+        tsps: 'teaspoon',
+        tsp: 'teaspoon',
+        lbs: 'pounds',
+        oz: 'ounce',
+        kg: 'kilogram',
+        ml: 'milliliter',
+        lb: 'pound',
+        g: 'gram',
+    };
+    const unitPattern = new RegExp('\\b(' + Object.keys(unitNormalizations).join('|') + ')\\b', 'gi');
+    const prepIngrText = ingrText.replace(unitPattern, match => { var _a; return (_a = unitNormalizations[match.toLowerCase()]) !== null && _a !== void 0 ? _a : match; });
     const parsedIngrRes = (0, parseStringConsecutiveTs_js_1.parseStringConsecutiveTs)(prepIngrText);
     if (!parsedIngrRes.ingredient) {
         return Object.assign(Object.assign({}, parsedIngrRes), { originalIngredientString: ingrStr, comment });
     }
     const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned'];
     const regex = new RegExp('\\b(' + wordsToRemove.join('|') + ')\\b', 'gi');
+    const descriptorSet = new Set(wordsToRemove.map(w => w.toLowerCase()));
+    const unit = parsedIngrRes.unit && descriptorSet.has(parsedIngrRes.unit.toLowerCase())
+        ? null
+        : parsedIngrRes.unit;
     const formattedIngrName = parsedIngrRes.ingredient
         .trim()
         .replace(/\s{2,}/g, ' ') // Replace multiple whitespace characters with a single space
@@ -55,6 +69,6 @@ const parseIngredientString = (ingrStr) => {
         .replace(/^(fluid|fl|oz) /, '') // Remove "fluid ", "fl ", or "oz " at the beginning of the string
         .replace(regex, '')
         .trim();
-    return Object.assign(Object.assign({}, parsedIngrRes), { ingredient: formattedIngrName, originalIngredientString: ingrStr, comment });
+    return Object.assign(Object.assign({}, parsedIngrRes), { unit, ingredient: formattedIngrName, originalIngredientString: ingrStr, comment });
 };
 exports.parseIngredientString = parseIngredientString;

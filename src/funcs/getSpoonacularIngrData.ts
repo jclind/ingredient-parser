@@ -1,7 +1,6 @@
 import {
   getIngredientInformation,
   searchIngredient,
-  setMongoDBIngrData,
 } from '../api/requests.js'
 
 export async function getSpoonacularIngrData(
@@ -37,8 +36,5 @@ export async function getSpoonacularIngrData(
     estimatedPrices: { estimatedGramPrice, estimatedSingleUnitPrice },
   }
 
-  const mongoDBIngrData = ingrData
-  const mongoRes = await setMongoDBIngrData(mongoDBIngrData)
-  const _id = mongoRes.data.insertedId
-  return { ...mongoDBIngrData, _id }
+  return ingrData
 }

@@ -13,7 +13,7 @@ exports.getSpoonacularIngrData = getSpoonacularIngrData;
 const requests_js_1 = require("../api/requests.js");
 function getSpoonacularIngrData(name, spoonacularAPIKey) {
     return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e, _f, _g;
         const searchedIngr = yield (0, requests_js_1.searchIngredient)(name, spoonacularAPIKey);
         if (searchedIngr.error)
             return searchedIngr;
@@ -24,12 +24,9 @@ function getSpoonacularIngrData(name, spoonacularAPIKey) {
         const ingrDataSingleUnit = yield (0, requests_js_1.getIngredientInformation)(ingrId, false, spoonacularAPIKey);
         if (ingrDataGram.error || ingrDataSingleUnit.error)
             return ingrDataGram;
-        const estimatedGramPrice = ingrDataGram.data.estimatedCost.value;
-        const estimatedSingleUnitPrice = ingrDataSingleUnit.data.estimatedCost.value;
+        const estimatedGramPrice = (_e = (_d = ingrDataGram.data.estimatedCost) === null || _d === void 0 ? void 0 : _d.value) !== null && _e !== void 0 ? _e : 0;
+        const estimatedSingleUnitPrice = (_g = (_f = ingrDataSingleUnit.data.estimatedCost) === null || _f === void 0 ? void 0 : _f.value) !== null && _g !== void 0 ? _g : 0;
         const ingrData = Object.assign(Object.assign({}, ingrDataGram.data), { name, ingredientId: ingrId, estimatedPrices: { estimatedGramPrice, estimatedSingleUnitPrice } });
-        const mongoDBIngrData = ingrData;
-        const mongoRes = yield (0, requests_js_1.setMongoDBIngrData)(mongoDBIngrData);
-        const _id = mongoRes.data.insertedId;
-        return Object.assign(Object.assign({}, mongoDBIngrData), { _id });
+        return ingrData;
     });
 }

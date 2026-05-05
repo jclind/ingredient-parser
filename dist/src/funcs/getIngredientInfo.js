@@ -11,25 +11,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getIngredientInfo = getIngredientInfo;
 const requests_js_1 = require("../api/requests.js");
-const getSpoonacularIngrData_js_1 = require("./getSpoonacularIngrData.js");
-function getIngredientInfo(ingrName, spoonacularAPIKey) {
+function getIngredientInfo(ingredientString, spoonacularAPIKey, serverUrl) {
     return __awaiter(this, void 0, void 0, function* () {
-        const ingrNameLower = ingrName.toLowerCase();
-        if (!ingrNameLower)
-            throw new Error('Ingredient Invalid');
-        let mongoIngrData = null;
         try {
-            mongoIngrData = yield (0, requests_js_1.checkIngredient)(ingrNameLower);
+            return yield (0, requests_js_1.parseAndEnrich)(ingredientString, spoonacularAPIKey, serverUrl);
         }
-        catch (_a) {
-            // MongoDB cache unavailable — fall through to Spoonacular
-        }
-        if (!(mongoIngrData === null || mongoIngrData === void 0 ? void 0 : mongoIngrData.data)) {
-            const ingrData = yield (0, getSpoonacularIngrData_js_1.getSpoonacularIngrData)(ingrNameLower, spoonacularAPIKey);
-            return ingrData;
-        }
-        else {
-            return mongoIngrData.data;
+        catch (error) {
+            throw new Error(error.message || 'Failed to fetch ingredient data');
         }
     });
 }

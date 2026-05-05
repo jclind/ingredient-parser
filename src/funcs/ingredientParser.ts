@@ -20,7 +20,8 @@ const ingredientParser = async (
   try {
     ingrData = await getIngredientInfo(
       parsedIngr.ingredient || '',
-      spoonacularAPIKey
+      spoonacularAPIKey,
+      options?.serverUrl
     )
   } catch (error: any) {
     return {
@@ -43,18 +44,20 @@ const ingredientParser = async (
       ...reducedIngrData
     } = ingrData
 
-    const totalPrice = calculatePrice(
-      parsedIngr.quantity,
-      parsedIngr.unit,
-      estimatedPrices
-    )
+    const totalPrice = estimatedPrices
+      ? calculatePrice(
+          parsedIngr.quantity,
+          parsedIngr.unit,
+          estimatedPrices
+        )
+      : null
 
     const imageSize = options?.imageSize ?? '100x100'
     const imagePath = `https://spoonacular.com/cdn/ingredients_${imageSize}/${reducedIngrData.image}`
     const updatedIngrData: IngredientData = {
       ...reducedIngrData,
       imagePath,
-      totalPriceUSACents: totalPrice,
+      ...(totalPrice !== null && { totalPriceUSACents: totalPrice }),
       ...(options?.returnNutritionData && { nutrition }),
     }
 

@@ -23,8 +23,8 @@ const convertFractions = (str) => {
         '⅒': '1/10',
     };
     for (const [fraction, value] of Object.entries(fractions)) {
-        const re = new RegExp(fraction, 'g');
-        str = str.replace(re, value);
+        str = str.replace(new RegExp(`(\\d)${fraction}`, 'g'), `$1 ${value}`);
+        str = str.replace(new RegExp(fraction, 'g'), value);
     }
     return str;
 };

@@ -1,27 +1,14 @@
-import { checkIngredient } from '../api/requests.js'
-import { getSpoonacularIngrData } from './getSpoonacularIngrData.js'
+import { parseAndEnrich } from '../api/requests.js'
+import { IngredientData } from '../../types.js'
 
 export async function getIngredientInfo(
-  ingrName: string,
-  spoonacularAPIKey: string
-) {
-  const ingrNameLower = ingrName.toLowerCase()
-  if (!ingrNameLower) throw new Error('Ingredient Invalid')
-
-  let mongoIngrData: any = null
+  ingredientString: string,
+  spoonacularAPIKey: string,
+  serverUrl?: string
+): Promise<IngredientData | null> {
   try {
-    mongoIngrData = await checkIngredient(ingrNameLower)
-  } catch {
-    // MongoDB cache unavailable — fall through to Spoonacular
-  }
-
-  if (!mongoIngrData?.data) {
-    const ingrData = await getSpoonacularIngrData(
-      ingrNameLower,
-      spoonacularAPIKey
-    )
-    return ingrData
-  } else {
-    return mongoIngrData.data
+    return await parseAndEnrich(ingredientString, spoonacularAPIKey, serverUrl)
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to fetch ingredient data')
   }
 }

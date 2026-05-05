@@ -1,8 +1,19 @@
+import { spoonacularHttp, createIngredientServerHttp } from './http.js'
 import { IngredientData } from '../../types.js'
-import { mongoHttp, spoonacularHttp } from './http.js'
-export const checkIngredient = async (name: string) => {
-  return await mongoHttp.get(`checkIngredient?name=${name}`)
+
+export const parseAndEnrich = async (
+  ingredientString: string,
+  spoonacularApiKey: string,
+  serverUrl?: string
+): Promise<IngredientData | null> => {
+  const serverHttp = createIngredientServerHttp(serverUrl)
+  const response = await serverHttp.post('/parse', {
+    ingredientString,
+    spoonacularApiKey,
+  })
+  return response.data.data ?? null
 }
+
 export const searchIngredient = async (
   name: string,
   spoonacularAPIKey: string
@@ -44,7 +55,4 @@ export const getIngredientInformation = async (
   }
 
   return ingrData
-}
-export const setMongoDBIngrData = async (data: IngredientData) => {
-  return await mongoHttp.post(`addIngredient`, data)
 }
