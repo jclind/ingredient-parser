@@ -1,15 +1,19 @@
 import axios from 'axios'
 
-export const mongoHttp = axios.create({
-  baseURL:
-    'https://us-east-1.aws.data.mongodb-api.com/app/prepify-ixumn/endpoint',
-  headers: {
-    'Content-type': 'application/json',
-  },
-})
+const DEFAULT_SERVER_URL =
+  'https://ingredient-parser-service-production-2635.up.railway.app'
+
 export const spoonacularHttp = axios.create({
   baseURL: 'https://api.spoonacular.com/food/ingredients/',
   headers: {
     'Content-type': 'application/json',
   },
 })
+
+export const createIngredientServerHttp = (serverUrl?: string) =>
+  axios.create({
+    baseURL: serverUrl || DEFAULT_SERVER_URL,
+    headers: {
+      'Content-type': 'application/json',
+    },
+  })
