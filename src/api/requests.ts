@@ -14,21 +14,33 @@ function handleRequestError(error: unknown): never {
   throw new Error('Network error, please try again')
 }
 
-export const parseAndEnrich = async (
-  ingredientString: string,
-  spoonacularApiKey: string,
+export const getIngredientFromServer = async (
+  name: string,
   serverUrl?: string
 ): Promise<IngredientData | null> => {
   try {
     const serverHttp = createIngredientServerHttp(serverUrl)
-    const response = await serverHttp.post('/parse', {
-      ingredientString,
-      spoonacularApiKey,
-    })
+    const response = await serverHttp.get(
+      `/ingredient/${encodeURIComponent(name)}`
+    )
     return response.data.data ?? null
-  } catch (error: unknown) {
-    handleRequestError(error)
+  } catch {
+    // Treat any server error as a cache miss and fall through to Spoonacular
+    return null
   }
+}
+
+export const saveIngredientToServer = (
+  name: string,
+  ingredientData: IngredientData,
+  serverUrl?: string
+): void => {
+  const serverHttp = createIngredientServerHttp(serverUrl)
+  serverHttp
+    .post('/ingredient', { name, ingredientData })
+    .catch(() => {
+      // Fire-and-forget — a failed write doesn't affect the caller
+    })
 }
 
 export const searchIngredient = async (

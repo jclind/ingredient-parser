@@ -1,14 +1,22 @@
-import { parseAndEnrich } from '../api/requests.js'
+import { getIngredientFromServer, saveIngredientToServer } from '../api/requests.js'
+import { getSpoonacularIngrData } from './getSpoonacularIngrData.js'
 import { IngredientData } from '../../types.js'
 
 export async function getIngredientInfo(
-  ingredientString: string,
+  ingredientName: string,
   spoonacularAPIKey: string,
   serverUrl?: string
 ): Promise<IngredientData | null> {
-  try {
-    return await parseAndEnrich(ingredientString, spoonacularAPIKey, serverUrl)
-  } catch (error: any) {
-    throw new Error(error.message || 'Failed to fetch ingredient data')
-  }
+  const cached = await getIngredientFromServer(ingredientName, serverUrl)
+  if (cached) return cached
+
+  const spoonacularData = await getSpoonacularIngrData(
+    ingredientName,
+    spoonacularAPIKey
+  )
+  if (!spoonacularData) return null
+
+  saveIngredientToServer(ingredientName, spoonacularData, serverUrl)
+
+  return spoonacularData
 }

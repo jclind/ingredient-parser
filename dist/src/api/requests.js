@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getIngredientInformation = exports.searchIngredient = exports.parseAndEnrich = void 0;
+exports.getIngredientInformation = exports.searchIngredient = exports.saveIngredientToServer = exports.getIngredientFromServer = void 0;
 const axios_1 = require("axios");
 const http_js_1 = require("./http.js");
 function handleRequestError(error) {
@@ -27,21 +27,28 @@ function handleRequestError(error) {
     }
     throw new Error('Network error, please try again');
 }
-const parseAndEnrich = (ingredientString, spoonacularApiKey, serverUrl) => __awaiter(void 0, void 0, void 0, function* () {
+const getIngredientFromServer = (name, serverUrl) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const serverHttp = (0, http_js_1.createIngredientServerHttp)(serverUrl);
-        const response = yield serverHttp.post('/parse', {
-            ingredientString,
-            spoonacularApiKey,
-        });
+        const response = yield serverHttp.get(`/ingredient/${encodeURIComponent(name)}`);
         return (_a = response.data.data) !== null && _a !== void 0 ? _a : null;
     }
-    catch (error) {
-        handleRequestError(error);
+    catch (_b) {
+        // Treat any server error as a cache miss and fall through to Spoonacular
+        return null;
     }
 });
-exports.parseAndEnrich = parseAndEnrich;
+exports.getIngredientFromServer = getIngredientFromServer;
+const saveIngredientToServer = (name, ingredientData, serverUrl) => {
+    const serverHttp = (0, http_js_1.createIngredientServerHttp)(serverUrl);
+    serverHttp
+        .post('/ingredient', { name, ingredientData })
+        .catch(() => {
+        // Fire-and-forget — a failed write doesn't affect the caller
+    });
+};
+exports.saveIngredientToServer = saveIngredientToServer;
 const searchIngredient = (name, spoonacularAPIKey) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         return yield http_js_1.spoonacularHttp.get(`search?query=${name}&number=1&apiKey=${spoonacularAPIKey}`);
