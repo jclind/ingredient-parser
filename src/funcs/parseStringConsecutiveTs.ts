@@ -35,7 +35,7 @@ const replaceModifiedWords = (
   return updatedStr
 }
 
-type ParsedIngredientOmitType = Omit<
+export type ParsedIngredientOmitType = Omit<
   ParsedIngredient,
   'originalIngredientString' | 'comment'
 >

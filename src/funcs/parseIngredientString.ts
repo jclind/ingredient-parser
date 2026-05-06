@@ -1,8 +1,13 @@
 import { ParsedIngredient } from '../../types.js'
 import { convertFractions } from './convertFractions.js'
-import { parseStringConsecutiveTs } from './parseStringConsecutiveTs.js'
+import { parseStringConsecutiveTs, type ParsedIngredientOmitType } from './parseStringConsecutiveTs.js'
 
 export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
+  // Input validation
+  if (typeof ingrStr !== 'string' || ingrStr === null || ingrStr === undefined) {
+    throw new TypeError('parseIngredientString expects a string input')
+  }
+
   // Define regular expressions for text inside parentheses and text before the first comma
   const parenRegex = /(\(.*?\))/
   const commaRegex = /^(.*?)(?=,)/
@@ -55,6 +60,18 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     ml: 'milliliter',
     lb: 'pound',
     g: 'gram',
+    // Additional unit recognitions
+    sprigs: 'sprig',
+    sprig: 'sprig',
+    'bay leaves': 'bay leaf',
+    'bay leaf': 'bay leaf',
+    sheets: 'sheet',
+    sheet: 'sheet',
+    tblsp: 'tablespoon',
+    dessertspoon: 'dessertspoon',
+    dessertspoons: 'dessertspoon',
+    'fl oz': 'fluid ounce',
+    'fluid oz': 'fluid ounce',
   }
   const unitPattern = new RegExp(
     '\\b(' + Object.keys(unitNormalizations).join('|') + ')\\b',
@@ -65,13 +82,75 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     match => unitNormalizations[match.toLowerCase()] ?? match
   )
 
-  const parsedIngrRes = parseStringConsecutiveTs(prepIngrText)
+  let parsedIngrRes: ParsedIngredientOmitType
+  try {
+    parsedIngrRes = parseStringConsecutiveTs(prepIngrText)
+  } catch {
+    // Return degraded result for malformed input (e.g., division by zero)
+    return {
+      quantity: 0,
+      unit: null,
+      unitPlural: null,
+      symbol: null,
+      ingredient: ingrStr.replace(/[^a-zA-Z\s]/g, '').trim(),
+      minQty: null,
+      maxQty: null,
+      originalIngredientString: ingrStr,
+      comment,
+    }
+  }
+
+  // Post-processing: check if ingredient name starts with an unrecognized unit
+  // The upstream parser doesn't recognize some units, so we extract them manually
+  const unrecognizedUnits = [
+    'sprig', 'sprigs',
+    'strip', 'strips',
+    'sheet', 'sheets',
+    'dessertspoon', 'dessertspoons',
+    'handful', 'handfuls',
+    'dash', 'dashes',
+    'bay leaf', 'bay leaves',
+  ]
+  const unrecognizedUnitPattern = new RegExp(
+    '^(' + unrecognizedUnits.join('|') + ')\\b',
+    'i'
+  )
+
+  if (parsedIngrRes.ingredient && parsedIngrRes.unit === null) {
+    const unitMatch = parsedIngrRes.ingredient.match(unrecognizedUnitPattern)
+    if (unitMatch) {
+      let unit = unitMatch[1].toLowerCase()
+      // Normalize plural forms to singular
+      const unitSingular: Record<string, string> = {
+        sprigs: 'sprig',
+        strips: 'strip',
+        sheets: 'sheet',
+        dessertspoons: 'dessertspoon',
+        handfuls: 'handful',
+        dashes: 'dash',
+        'bay leaves': 'bay leaf',
+      }
+      parsedIngrRes.unit = unitSingular[unit] ?? unit
+      parsedIngrRes.ingredient = parsedIngrRes.ingredient
+        .replace(unrecognizedUnitPattern, '')
+        .trim()
+    }
+  }
+
+  // Post-processing: handle "fl oz" / "fluid ounce" which upstream parser normalizes to "ounce"
+  if (parsedIngrRes.unit === 'ounce' &&
+      (ingrStr.toLowerCase().includes('fl oz') ||
+       ingrStr.toLowerCase().includes('fluid ounce'))) {
+    parsedIngrRes.unit = 'fluid ounce'
+    // Also fix the symbol
+    parsedIngrRes.symbol = 'fl oz'
+  }
 
   if (!parsedIngrRes.ingredient) {
     return { ...parsedIngrRes, originalIngredientString: ingrStr, comment }
   }
 
-  const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned']
+  const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned', 'freshly', 'finely', 'roughly', 'coarsely', 'grated', 'chopped']
   const regex = new RegExp('\\b(' + wordsToRemove.join('|') + ')\\b', 'gi')
 
   const descriptorSet = new Set(wordsToRemove.map(w => w.toLowerCase()))
