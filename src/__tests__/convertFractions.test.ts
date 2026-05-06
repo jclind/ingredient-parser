@@ -65,15 +65,72 @@ describe('convertFractions', () => {
   // Fix: insert a space before the fraction symbol when preceded by a digit.
   describe('digit adjacent to fraction symbol (FAILING — known bug)', () => {
     it('handles 2½ → 2 1/2', () => {
+      // TODO: known unicode fraction bug — fix tracked separately
       expect(convertFractions('2½ cups sugar')).toBe('2 1/2 cups sugar')
     })
 
     it('handles 3⅓ → 3 1/3', () => {
+      // TODO: known unicode fraction bug — fix tracked separately
       expect(convertFractions('3⅓ cups flour')).toBe('3 1/3 cups flour')
     })
 
     it('handles 1¾ → 1 3/4', () => {
+      // TODO: known unicode fraction bug — fix tracked separately
       expect(convertFractions('1¾ tsp vanilla')).toBe('1 3/4 tsp vanilla')
+    })
+  })
+
+  describe('additional unicode fractions in context', () => {
+    it('converts ⅛ (one-eighth)', () => {
+      expect(convertFractions('⅛ teaspoon nutmeg')).toBe('1/8 teaspoon nutmeg')
+    })
+
+    it('converts ⅜ (three-eighths)', () => {
+      expect(convertFractions('⅜ cup sugar')).toBe('3/8 cup sugar')
+    })
+
+    it('converts ⅝ (five-eighths)', () => {
+      expect(convertFractions('⅝ cup oil')).toBe('5/8 cup oil')
+    })
+
+    it('converts ⅞ (seven-eighths)', () => {
+      expect(convertFractions('⅞ cup cream')).toBe('7/8 cup cream')
+    })
+
+    it('converts ⅕ (one-fifth)', () => {
+      expect(convertFractions('⅕ liter water')).toBe('1/5 liter water')
+    })
+
+    it('converts ⅖ (two-fifths)', () => {
+      expect(convertFractions('⅖ cup vinegar')).toBe('2/5 cup vinegar')
+    })
+
+    it('converts ⅗ (three-fifths)', () => {
+      expect(convertFractions('⅗ cup flour')).toBe('3/5 cup flour')
+    })
+
+    it('converts ⅘ (four-fifths)', () => {
+      expect(convertFractions('⅘ cup milk')).toBe('4/5 cup milk')
+    })
+
+    it('converts ⅙ (one-sixth)', () => {
+      expect(convertFractions('⅙ cup cream')).toBe('1/6 cup cream')
+    })
+
+    it('converts ⅚ (five-sixths)', () => {
+      expect(convertFractions('⅚ cup broth')).toBe('5/6 cup broth')
+    })
+
+    it('converts ⅐ (one-seventh)', () => {
+      expect(convertFractions('⅐ cup juice')).toBe('1/7 cup juice')
+    })
+
+    it('converts ⅑ (one-ninth)', () => {
+      expect(convertFractions('⅑ cup water')).toBe('1/9 cup water')
+    })
+
+    it('converts ⅒ (one-tenth)', () => {
+      expect(convertFractions('⅒ cup sauce')).toBe('1/10 cup sauce')
     })
   })
 })
