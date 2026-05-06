@@ -34,6 +34,62 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
   const extractedMinQty = minQty
   const extractedMaxQty = maxQty
 
+  // Pre-processing: handle informal quantity patterns ("a pinch of", "handful", "dash")
+  // These patterns aren't well-handled by the upstream parser
+  const informalQtyPatterns = [
+    {
+      // "a pinch of salt"
+      regex: /^a\s+(pinch|dash|handful)\s+of\s+(.+)$/i,
+      extract: (match: RegExpMatchArray) => ({
+        quantity: 1,
+        unit: match[1].toLowerCase(),
+        ingredient: match[2].trim(),
+      })
+    },
+    {
+      // "pinch of salt", "dash of hot sauce"
+      regex: /^(pinch|dash|handful)\s+of\s+(.+)$/i,
+      extract: (match: RegExpMatchArray) => ({
+        quantity: 1,
+        unit: match[1].toLowerCase(),
+        ingredient: match[2].trim(),
+      })
+    },
+    {
+      // "handful spinach" (no "of")
+      regex: /^(pinch|dash|handful)\s+(.+)$/i,
+      extract: (match: RegExpMatchArray) => ({
+        quantity: 1,
+        unit: match[1].toLowerCase(),
+        ingredient: match[2].trim(),
+      })
+    },
+  ]
+
+  for (const pattern of informalQtyPatterns) {
+    const match = ingrStr.match(pattern.regex)
+    if (match) {
+      const { quantity, unit, ingredient } = pattern.extract(match)
+
+      // Apply descriptor stripping to ingredient
+      const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned', 'freshly', 'finely', 'roughly', 'coarsely', 'grated', 'chopped']
+      const regex = new RegExp('\\b(' + wordsToRemove.join('|') + ')\\b', 'gi')
+      const cleanedIngredient = ingredient.replace(regex, '').trim()
+
+      return {
+        quantity,
+        unit,
+        unitPlural: unit + 's',
+        symbol: null,
+        ingredient: cleanedIngredient,
+        originalIngredientString: originalInput,
+        minQty: quantity,
+        maxQty: quantity,
+        comment: '',
+      }
+    }
+  }
+
   // Define regular expressions for text inside parentheses and text before the first comma
   const parenRegex = /(\(.*?\))/
   const commaRegex = /^(.*?)(?=,)/
