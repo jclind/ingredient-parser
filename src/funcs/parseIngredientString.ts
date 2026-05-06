@@ -8,6 +8,32 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     throw new TypeError('parseIngredientString expects a string input')
   }
 
+  // Store original input before any modifications
+  const originalInput = ingrStr
+
+  // Extract range quantities (e.g., "1-2 cups", "2 to 3 cups")
+  let minQty: number | null = null
+  let maxQty: number | null = null
+
+  const hyphenRangeMatch = ingrStr.match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)/)
+  const toRangeMatch = ingrStr.match(/(\d+(?:\.\d+)?)\s+to\s+(\d+(?:\.\d+)?)/i)
+
+  if (hyphenRangeMatch) {
+    minQty = parseFloat(hyphenRangeMatch[1])
+    maxQty = parseFloat(hyphenRangeMatch[2])
+    // Replace the range with minQty for parsing
+    ingrStr = ingrStr.replace(hyphenRangeMatch[0], String(minQty))
+  } else if (toRangeMatch) {
+    minQty = parseFloat(toRangeMatch[1])
+    maxQty = parseFloat(toRangeMatch[2])
+    // Replace the range with minQty for parsing
+    ingrStr = ingrStr.replace(toRangeMatch[0], String(minQty))
+  }
+
+  // Store extracted ranges for later use
+  const extractedMinQty = minQty
+  const extractedMaxQty = maxQty
+
   // Define regular expressions for text inside parentheses and text before the first comma
   const parenRegex = /(\(.*?\))/
   const commaRegex = /^(.*?)(?=,)/
@@ -95,7 +121,7 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
       ingredient: ingrStr.replace(/[^a-zA-Z\s]/g, '').trim(),
       minQty: null,
       maxQty: null,
-      originalIngredientString: ingrStr,
+      originalIngredientString: originalInput,
       comment,
     }
   }
@@ -139,15 +165,15 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
 
   // Post-processing: handle "fl oz" / "fluid ounce" which upstream parser normalizes to "ounce"
   if (parsedIngrRes.unit === 'ounce' &&
-      (ingrStr.toLowerCase().includes('fl oz') ||
-       ingrStr.toLowerCase().includes('fluid ounce'))) {
+      (originalInput.toLowerCase().includes('fl oz') ||
+       originalInput.toLowerCase().includes('fluid ounce'))) {
     parsedIngrRes.unit = 'fluid ounce'
     // Also fix the symbol
     parsedIngrRes.symbol = 'fl oz'
   }
 
   if (!parsedIngrRes.ingredient) {
-    return { ...parsedIngrRes, originalIngredientString: ingrStr, comment }
+    return { ...parsedIngrRes, originalIngredientString: originalInput, comment }
   }
 
   const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned', 'freshly', 'finely', 'roughly', 'coarsely', 'grated', 'chopped']
@@ -172,7 +198,9 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     ...parsedIngrRes,
     unit,
     ingredient: formattedIngrName,
-    originalIngredientString: ingrStr,
+    originalIngredientString: originalInput,
     comment,
+    minQty: extractedMinQty ?? parsedIngrRes.minQty,
+    maxQty: extractedMaxQty ?? parsedIngrRes.maxQty,
   }
 }
