@@ -1,9 +1,9 @@
-import axios from 'axios'
+import { isAxiosError } from 'axios'
 import { spoonacularHttp, createIngredientServerHttp } from './http.js'
 import { IngredientData } from '../../types.js'
 
 function handleRequestError(error: unknown): never {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     const status = error.response?.status
     const code = error.response?.data?.code
     if (status === 401 || code === 401) throw new Error('API Key Not Valid')

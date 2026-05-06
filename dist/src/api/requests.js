@@ -8,16 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getIngredientInformation = exports.searchIngredient = exports.parseAndEnrich = void 0;
-const axios_1 = __importDefault(require("axios"));
+const axios_1 = require("axios");
 const http_js_1 = require("./http.js");
 function handleRequestError(error) {
     var _a, _b, _c;
-    if (axios_1.default.isAxiosError(error)) {
+    if ((0, axios_1.isAxiosError)(error)) {
         const status = (_a = error.response) === null || _a === void 0 ? void 0 : _a.status;
         const code = (_c = (_b = error.response) === null || _b === void 0 ? void 0 : _b.data) === null || _c === void 0 ? void 0 : _c.code;
         if (status === 401 || code === 401)
