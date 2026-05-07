@@ -16,12 +16,9 @@ npm install @jclind/ingredient-parser
 ## Quick Start
 
 ```ts
-import { parseIngredient } from '@jclind/ingredient-parser'
+import { ingredientParser } from '@jclind/ingredient-parser'
 
-const ingredientString = '1 cup rice, washed'
-const apiKey = 'YOUR_API_KEY'
-
-const result = await parseIngredient(ingredientString, apiKey, {
+const result = await ingredientParser('1 cup rice, washed', 'YOUR_API_KEY', {
   returnNutritionData: true,
 })
 
@@ -30,48 +27,85 @@ console.log(result)
 
 ## API
 
-### `parseIngredient(ingredientString, SPOONACULAR_API_KEY, options?)`
+### `ingredientParser(ingredientString, apiKey, options?)`
 
 Parses an ingredient string and returns both the parsed ingredient data and ingredient metadata retrieved from Spoonacular.
 
 ```ts
-import { parseIngredient } from '@jclind/ingredient-parser'
+import { ingredientParser } from '@jclind/ingredient-parser'
 
-parseIngredient(
+ingredientParser(
   ingredientString: string,
-  SPOONACULAR_API_KEY: string,
+  apiKey: string,
   options?: {
     returnNutritionData?: boolean
+    imageSize?: '100x100' | '250x250' | '500x500'
+    serverUrl?: string
   }
-): Promise<IngredientResponseType>
+): Promise<IngredientResponse>
 ```
 
-| Parameter             | Type     | Required | Description                                             |
-| --------------------- | -------- | -------- | ------------------------------------------------------- |
-| `ingredientString`    | `string` | Yes      | Ingredient string formatted like `2 cups onions, diced` |
-| `SPOONACULAR_API_KEY` | `string` | Yes      | Your Spoonacular API key                                |
-| `options`             | `object` | No       | Additional parsing options                              |
+| Parameter          | Type     | Required | Description                                             |
+| ------------------ | -------- | -------- | ------------------------------------------------------- |
+| `ingredientString` | `string` | Yes      | Ingredient string formatted like `2 cups onions, diced` |
+| `apiKey`           | `string` | Yes      | Your Spoonacular API key                                |
+| `options`          | `object` | No       | Additional parsing options                              |
 
-### Options
+#### Options
 
-| Option                | Type      | Default | Description                                             |
-| --------------------- | --------- | ------- | ------------------------------------------------------- |
-| `returnNutritionData` | `boolean` | `false` | Includes Spoonacular nutrition data in `ingredientData` |
+| Option                | Type                                    | Default     | Description                                                   |
+| --------------------- | --------------------------------------- | ----------- | ------------------------------------------------------------- |
+| `returnNutritionData` | `boolean`                               | `false`     | Includes Spoonacular nutrition data in `ingredientData`       |
+| `imageSize`           | `'100x100' \| '250x250' \| '500x500'`  | `'100x100'` | Size of the ingredient image returned in `imagePath`          |
+| `serverUrl`           | `string`                                | —           | Override the default proxy server URL used to call Spoonacular |
+
+---
+
+### `parseIngredientString(ingredientString)`
+
+Parses an ingredient string locally without any network calls. Use this when you only need quantity, unit, and ingredient name extraction.
+
+```ts
+import { parseIngredientString } from '@jclind/ingredient-parser'
+
+parseIngredientString(ingredientString: string): ParsedIngredient
+```
+
+```ts
+parseIngredientString('1 cup rice, washed')
+// {
+//   quantity: 1,
+//   unit: 'cup',
+//   unitPlural: 'cups',
+//   symbol: 'c',
+//   ingredient: 'rice',
+//   originalIngredientString: '1 cup rice, washed',
+//   minQty: 1,
+//   maxQty: 1,
+//   comment: 'washed'
+// }
+```
 
 ---
 
 ## Response Structure
 
-Returns an object with the following shape:
+`ingredientParser` returns a discriminated union. On success, `ingredientData` is always present. On error, `error` is present and `ingredientData` is `null`.
 
 ```ts
+// Success
 {
-  id: string
-  parsedIngredient: ParsedIngredientType
-  ingredientData: IngredientDataType | null
-  error?: {
-    message: string
-  }
+  parsedIngredient: ParsedIngredient
+  ingredientData: IngredientData
+  id?: string
+}
+
+// Error
+{
+  error: { message: string }
+  parsedIngredient: ParsedIngredient
+  ingredientData: null
+  id?: string
 }
 ```
 
@@ -99,7 +133,6 @@ Returns an object with the following shape:
 
 ```ts
 {
-  _id: '63caeabf4762c87be39c3795',
   ingredientId: 20444,
   originalName: 'rice',
   name: 'rice',
@@ -111,39 +144,40 @@ Returns an object with the following shape:
   image: 'uncooked-white-rice.png',
   imagePath: 'https://spoonacular.com/cdn/ingredients_100x100/uncooked-white-rice.png',
   nutrition?: {
-    nutrients: [Array],
-    properties: [Array],
-    flavonoids: [Array],
-    caloricBreakdown: [Object],
-    weightPerServing: [Object]
+    nutrients: [...],
+    properties: [...],
+    flavonoids: [...],
+    caloricBreakdown: {...},
+    weightPerServing: {...}
   },
-  dateAdded: 1674242751000,
   totalPriceUSACents: 75.71
 }
 ```
 
+---
+
 ## Error Handling
 
-If the ingredient cannot be identified or the API key is invalid, the function returns an error object while still including the parsed ingredient structure.
+The function returns an error object (and `ingredientData: null`) when the ingredient cannot be identified or the API key is invalid. `parsedIngredient` is always populated.
 
 ### Unknown Ingredient
 
 ```ts
-parseIngredient('Invalid Text', YOUR_API_KEY)
+const result = await ingredientParser('Invalid Text', 'YOUR_API_KEY')
 
 /*
 {
-  error: { message: 'No Data Found, unknown ingredient: invalid text' },
+  error: { message: 'Ingredient not formatted correctly or Ingredient Unknown. Please pass ingredient comments/instructions after a comma' },
   ingredientData: null,
   parsedIngredient: {
-    quantity: 0,
-    unit: 'q.b.',
-    unitPlural: 'q.b.',
+    quantity: null,
+    unit: null,
+    unitPlural: null,
     symbol: null,
     ingredient: 'Invalid Text',
     originalIngredientString: 'Invalid Text',
-    minQty: 0,
-    maxQty: 0,
+    minQty: null,
+    maxQty: null,
     comment: null
   }
 }
@@ -153,7 +187,7 @@ parseIngredient('Invalid Text', YOUR_API_KEY)
 ### Invalid API Key
 
 ```ts
-parseIngredient('1 cup rice', INVALID_API_KEY)
+const result = await ingredientParser('1 cup rice', 'INVALID_KEY')
 
 /*
 {
@@ -174,37 +208,42 @@ parseIngredient('1 cup rice', INVALID_API_KEY)
 */
 ```
 
+---
+
 ## TypeScript
 
 This package ships with full TypeScript definitions. No additional `@types` package required.
 
 ```ts
 import {
-  parseIngredient,
-  ParsedIngredientType,
-  IngredientDataType,
-  IngredientResponseType,
+  ingredientParser,
+  parseIngredientString,
+  ParsedIngredient,
+  IngredientData,
+  IngredientResponse,
 } from '@jclind/ingredient-parser'
 
-const ingredientString: string = '1 cup rice, washed'
-const apiKey: string = 'YOUR_API_KEY'
-
-const parsed: IngredientResponseType = await parseIngredient(
-  ingredientString,
-  apiKey,
+const result: IngredientResponse = await ingredientParser(
+  '1 cup rice, washed',
+  'YOUR_API_KEY'
 )
 
-const parsedIngredient: ParsedIngredientType = parsed.parsedIngredient
-
-const ingredientData: IngredientDataType | null = parsed.ingredientData
+if ('error' in result) {
+  console.error(result.error.message)
+} else {
+  const parsed: ParsedIngredient = result.parsedIngredient
+  const data: IngredientData = result.ingredientData
+}
 ```
+
+---
 
 ## Notes
 
-- A valid Spoonacular API key is required for ingredient lookups.
-- Ingredient parsing is powered by `recipe-ingredient-parser-v3`.
+- A valid Spoonacular API key is required for ingredient lookups via `ingredientParser`.
+- `parseIngredientString` works offline with no API key.
 - Nutrition data is optional and disabled by default to reduce API usage.
-- Parsed ingredient results are returned even when ingredient lookup fails.
+- `parsedIngredient` is always populated, even when the API call fails.
 
 ## Issues & Contributing
 
