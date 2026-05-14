@@ -34,6 +34,29 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
   const extractedMinQty = minQty
   const extractedMaxQty = maxQty
 
+  // Pre-processing: join comma-separated hyphenated descriptors so the
+  // comma-split heuristic below doesn't chop the ingredient name in half.
+  // "4 bone-in, skin-on chicken thighs" → "4 bone-in skin-on chicken thighs"
+  // Descriptors are preserved in the ingredient name so Spoonacular returns
+  // the correct price variant (e.g. bone-in thighs vs boneless).
+  const hyphenatedDescriptors = [
+    'bone-in',
+    'boneless',
+    'skin-on',
+    'skinless',
+    'free-range',
+    'cage-free',
+    'grass-fed',
+    'wild-caught',
+    'pasture-raised',
+  ]
+  const descPattern = hyphenatedDescriptors.join('|')
+  const commaJoinRegex = new RegExp(
+    `\\b(${descPattern}),\\s+(?=(?:${descPattern})\\b)`,
+    'gi'
+  )
+  ingrStr = ingrStr.replace(commaJoinRegex, '$1 ')
+
   // Pre-processing: handle informal quantity patterns ("a pinch of", "handful", "dash")
   // These patterns aren't well-handled by the upstream parser
   const informalQtyPatterns = [

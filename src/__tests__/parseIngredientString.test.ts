@@ -305,6 +305,33 @@ describe('parseIngredientString', () => {
         expect(r.ingredient).toBe('sun-dried tomatoes')
         expect(r.originalIngredientString).toBe(input)
       })
+
+      it('preserves comma-separated hyphenated descriptors in the ingredient name', () => {
+        const input = '4 bone-in, skin-on chicken thighs'
+        const r = parseIngredientString(input)
+        expect(r.quantity).toBe(4)
+        expect(r.ingredient).toBe('bone-in skin-on chicken thighs')
+        expect(r.originalIngredientString).toBe(input)
+      })
+
+      it('handles a single hyphenated descriptor with no comma', () => {
+        const r = parseIngredientString('2 boneless chicken breasts')
+        expect(r.quantity).toBe(2)
+        expect(r.ingredient).toBe('boneless chicken breasts')
+      })
+
+      it('handles a chain of three comma-separated descriptors', () => {
+        const r = parseIngredientString('6 bone-in, skin-on, free-range chicken thighs')
+        expect(r.quantity).toBe(6)
+        expect(r.ingredient).toBe('bone-in skin-on free-range chicken thighs')
+      })
+
+      it('does not join commas when only one side is a known descriptor', () => {
+        // Regression guard: "flour, sifted" must still route "sifted" to comment.
+        const r = parseIngredientString('2 cups all-purpose flour, sifted')
+        expect(r.ingredient).toBe('all-purpose flour')
+        expect(r.comment).toBe('sifted')
+      })
     })
 
     describe('multi-word ingredients with modifiers', () => {
