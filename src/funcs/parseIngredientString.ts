@@ -57,6 +57,13 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
   )
   ingrStr = ingrStr.replace(commaJoinRegex, '$1 ')
 
+  // Pre-processing: strip trailing purpose phrases ("for garnish", "to taste", etc.)
+  // so Spoonacular can look up the base ingredient. Without this, names like
+  // "parsley for garnish" miss because Spoonacular only indexes "parsley".
+  const trailingPurposeRegex =
+    /[,\s]+(for\s+(the\s+)?(garnish|serving|topping)|to\s+(garnish|serve|taste))\s*$/i
+  ingrStr = ingrStr.replace(trailingPurposeRegex, '')
+
   // Pre-processing: handle informal quantity patterns ("a pinch of", "handful", "dash")
   // These patterns aren't well-handled by the upstream parser
   const informalQtyPatterns = [
@@ -240,6 +247,14 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
         .replace(unrecognizedUnitPattern, '')
         .trim()
     }
+  }
+
+  // Post-processing: upstream parser emits "q.b." (Italian "quanto basta") as a
+  // sentinel unit when no quantity and no unit are given. Normalize to null so
+  // English consumers get a clean contract ("no unit known").
+  if (parsedIngrRes.unit === 'q.b.') {
+    parsedIngrRes.unit = null
+    parsedIngrRes.unitPlural = null
   }
 
   // Post-processing: handle "fl oz" / "fluid ounce" which upstream parser normalizes to "ounce"

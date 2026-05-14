@@ -403,6 +403,49 @@ describe('parseIngredientString', () => {
       })
     })
 
+    describe('trailing purpose phrases and q.b. normalization', () => {
+      it('strips "for garnish" and normalizes q.b. to null', () => {
+        const input = 'Fresh parsley for garnish'
+        const r = parseIngredientString(input)
+        expect(r.ingredient).toBe('parsley')
+        expect(r.unit).toBeNull()
+        expect(r.unitPlural).toBeNull()
+        expect(r.quantity).toBe(0)
+        expect(r.originalIngredientString).toBe(input)
+      })
+
+      it('strips "for serving" suffix', () => {
+        const r = parseIngredientString('olive oil for serving')
+        expect(r.ingredient).toBe('olive oil')
+      })
+
+      it('strips "to taste" suffix and normalizes q.b.', () => {
+        const r = parseIngredientString('salt to taste')
+        expect(r.ingredient).toBe('salt')
+        expect(r.unit).toBeNull()
+      })
+
+      it('strips "for the topping" with article', () => {
+        const r = parseIngredientString('grated parmesan for the topping')
+        expect(r.ingredient).toBe('parmesan')
+      })
+
+      it('strips purpose phrase when quantity is present', () => {
+        const r = parseIngredientString('1 tsp salt for garnish')
+        expect(r.quantity).toBe(1)
+        expect(r.unit).toBe('teaspoon')
+        expect(r.ingredient).toBe('salt')
+      })
+
+      it('normalizes bare-ingredient q.b. to null', () => {
+        // Regression guard: "pepper" alone goes through upstream parser as
+        // q.b.; consumer should see unit: null, not "q.b.".
+        const r = parseIngredientString('pepper')
+        expect(r.unit).toBeNull()
+        expect(r.unitPlural).toBeNull()
+      })
+    })
+
     describe('informal quantities', () => {
       it('handles "a pinch of salt"', () => {
         const input = 'a pinch of salt'
