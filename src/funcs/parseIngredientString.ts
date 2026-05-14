@@ -95,8 +95,8 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
       const { quantity, unit, ingredient } = pattern.extract(match)
 
       // Apply descriptor stripping to ingredient
-      const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned', 'freshly', 'finely', 'roughly', 'coarsely', 'grated', 'chopped']
-      const regex = new RegExp('\\b(' + wordsToRemove.join('|') + ')\\b', 'gi')
+      const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'dried', 'canned', 'freshly', 'finely', 'roughly', 'coarsely', 'grated', 'chopped']
+      const regex = new RegExp('(?<!-)\\b(' + wordsToRemove.join('|') + ')\\b(?!-)', 'gi')
       const cleanedIngredient = ingredient.replace(regex, '').trim()
 
       return {
@@ -255,8 +255,8 @@ export const parseIngredientString = (ingrStr: string): ParsedIngredient => {
     return { ...parsedIngrRes, originalIngredientString: originalInput, comment }
   }
 
-  const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'canned', 'freshly', 'finely', 'roughly', 'coarsely', 'grated', 'chopped']
-  const regex = new RegExp('\\b(' + wordsToRemove.join('|') + ')\\b', 'gi')
+  const wordsToRemove = ['small', 'medium', 'large', 'fresh', 'dried', 'canned', 'freshly', 'finely', 'roughly', 'coarsely', 'grated', 'chopped']
+  const regex = new RegExp('(?<!-)\\b(' + wordsToRemove.join('|') + ')\\b(?!-)', 'gi')
 
   const descriptorSet = new Set(wordsToRemove.map(w => w.toLowerCase()))
   const unit =

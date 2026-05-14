@@ -159,6 +159,12 @@ describe('parseIngredientString', () => {
       expect(parseIngredientString('1 cup fresh basil').ingredient).toBe('basil')
     })
 
+    it('strips "dried" from the ingredient name', () => {
+      // Spoonacular indexes most herbs/spices by base name only; preserving
+      // "dried" causes lookup misses (e.g. "1 tsp dried oregano").
+      expect(parseIngredientString('1 tsp dried oregano').ingredient).toBe('oregano')
+    })
+
     it('strips "canned" from the ingredient name', () => {
       expect(parseIngredientString('1 can canned beans').ingredient).toBe('beans')
     })
