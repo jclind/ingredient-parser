@@ -1,0 +1,48 @@
+{
+  "name": "@jclind/ingredient-parser",
+  "version": "2.0.0",
+  "description": "Parse natural-language ingredient strings into structured data, with vendor-neutral enrichment and price provenance",
+  "keywords": ["recipe", "ingredient", "parse", "units", "price", "nutrition"],
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cjs/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jclind/ingredient-parser.git"
+  },
+  "author": "Jesse Lind",
+  "license": "ISC",
+  "homepage": "https://github.com/jclind/ingredient-parser#readme",
+  "bugs": {
+    "url": "https://github.com/jclind/ingredient-parser/issues"
+  },
+  "scripts": {
+    "build": "rimraf dist && npm run build:cjs && npm run build:esm && node scripts/fixup.js",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "demo": "npm run build:cjs && node demo.js",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": ["/node_modules/", "/dist/"],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    }
+  }
+}

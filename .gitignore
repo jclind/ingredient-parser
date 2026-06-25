@@ -1,0 +1,5 @@
+node_modules
+dist
+.claude/settings.local.json
+*.tgz
+.DS_Store
