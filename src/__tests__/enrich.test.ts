@@ -166,21 +166,47 @@ describe('createEnricher', () => {
     expect(data?.price?.grams).toBeGreaterThan(0)
   })
 
-  it('unit-estimate fallback when volume ingredient has no known density', async () => {
+  it('declines to price a volume measure when the ingredient has no density', async () => {
     const enrich = createEnricher({
       transport: async () => res(200, { data: neutral() }),
     })
+    // Parsley has no density entry, so cups can't become grams. This used to
+    // fall through to the per-unit estimate and price 2 cups as 2 whole items.
+    // Enrichment still succeeds; only the price is withheld.
     const data = await enrich(parse('2 cups parsley'))
-    expect(data?.price).toMatchObject({ basis: 'unit-estimate', confidence: 'low' })
+    expect(data).not.toBeNull()
+    expect(data?.price).toBeNull()
+  })
+
+  it('still prices a countable unit from the per-unit estimate', async () => {
+    const enrich = createEnricher({
+      transport: async () =>
+        res(200, {
+          data: neutral({
+            name: 'black beans',
+            estimatedPrices: { perGramCents: 0.15, perUnitCents: 89 },
+          }),
+        }),
+    })
+    const data = await enrich(parse('2 cans black beans'))
+    expect(data?.price).toMatchObject({ basis: 'unit-estimate', cents: 178, confidence: 'low' })
   })
 
   it('opts.toGrams overrides the default density converter', async () => {
     const enrich = createEnricher({
       transport: async () => res(200, { data: neutral() }),
-      toGrams: () => null, // force unit-estimate everywhere
+      toGrams: () => ({ grams: 1000, exact: true }),
     })
     const data = await enrich(parse('2 cups rice'))
-    expect(data?.price?.basis).toBe('unit-estimate')
+    expect(data?.price).toMatchObject({ basis: 'gram', grams: 1000, confidence: 'high' })
+  })
+
+  it('a converter that declines leaves a volume measure unpriced', async () => {
+    const enrich = createEnricher({
+      transport: async () => res(200, { data: neutral() }),
+      toGrams: () => null,
+    })
+    expect((await enrich(parse('2 cups rice')))?.price).toBeNull()
   })
 
   it('returns null when the parsed name is empty (no lookup)', async () => {

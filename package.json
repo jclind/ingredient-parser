@@ -1,6 +1,6 @@
 {
   "name": "@jclind/ingredient-parser",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Parse natural-language ingredient strings into structured data, with vendor-neutral enrichment and price provenance",
   "keywords": ["recipe", "ingredient", "parse", "units", "price", "nutrition"],
   "type": "commonjs",

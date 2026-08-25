@@ -188,6 +188,24 @@ interface Price {
 `'unit-estimate'` when it doesn't and we fall back to `perUnit × quantity`.
 No silent `Math.ceil`; rounding is explicit and documented.
 
+`price` is `null` when neither path can answer honestly. Two gates decide that,
+both added in 2.1.0 after a volume-measured ingredient shipped at 1/236th of its
+real cost:
+
+- **The unit-estimate fallback only applies to units that count discrete items**
+  (`count`, `informal`, or no unit at all). A per-item price is an answer to
+  "what does one of these cost?", so applying it to a mass or volume measure is a
+  category error rather than a rough estimate. `1 1/3 cup salsa` came out at
+  $0.01 against a real $1.23.
+- **A `perUnitCents` equal to `perGramCents` is treated as absent.** Providers
+  derive it from a "cost of amount = 1" lookup whose unit is the ingredient's own
+  default, and for bulk goods that default is a gram, so the per-gram price comes
+  back wearing a per-item label. Across a 20-ingredient probe the equality was
+  exact for every bulk ingredient and never held for a countable one.
+
+Callers should render a null price as "no price" and offer the user a way to
+supply one, not as $0.00.
+
 ---
 
 ## 6. Architecture decisions

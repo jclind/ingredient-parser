@@ -2,7 +2,8 @@
 //
 // The gram-accurate path is used whenever the parsed unit converts to grams;
 // otherwise we fall back to the provider's single-unit estimate and mark the
-// result low-confidence. No silent `Math.ceil` (v1 did `Math.ceil(x*100)/100`,
+// result low-confidence — but only for units that count discrete items, since a
+// per-item price says nothing about a cup or a pound. No silent `Math.ceil` (v1 did `Math.ceil(x*100)/100`,
 // which over-counts); rounding is to the nearest 1/100 cent and documented.
 
 import type { EstimatedPrices, Price } from './types.js'
@@ -52,6 +53,16 @@ const round2 = (cents: number) => Math.round(cents * 100) / 100
 const usablePrice = (n: unknown): number | null =>
   typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : null
 
+// The single-unit estimate answers "what does one of these cost?", so it only
+// means anything when the quantity counts discrete items: 2 eggs, 3 onions, a
+// can of beans. A mass or volume measure needs a per-gram price. Multiplying
+// cups by price-per-onion is a category error, not a rough approximation, and
+// it silently produced ~236x errors in the wild (`1 1/3 cup salsa` → $0.01)
+// before this gate existed. Declining lets the caller show "no price" and ask
+// the author for one, which beats a confident wrong number.
+const countsDiscreteItems = (unit: UnitLike | null): boolean =>
+  unit === null || unit.type === 'count' || unit.type === 'informal'
+
 export function calculatePrice(
   quantity: number | null,
   unit: UnitLike | null,
@@ -64,10 +75,21 @@ export function calculatePrice(
 
   // Coerce provider price estimates: non-finite or non-positive → treated as absent.
   const perGram = usablePrice(prices.perGramCents)
-  const perUnit = usablePrice(prices.perUnitCents)
+  const perUnitRaw = usablePrice(prices.perUnitCents)
+
+  // A per-unit price identical to the per-gram price is not a per-unit price.
+  // Providers derive it from a "cost of amount=1" lookup whose unit is the
+  // ingredient's own default, and for bulk goods that default IS a gram, so the
+  // same number comes back wearing a per-item label. Equality is a reliable
+  // tell: across a 20-ingredient probe of the live proxy every countable
+  // ingredient differed (egg 24 vs 0.55, onion 24.2 vs 0.22) and every bulk one
+  // matched to the cent (salsa, flour, yogurt, soy sauce). A genuine per-item
+  // price that happens to equal the per-gram price would cost us a decline,
+  // which is the safe direction to be wrong in.
+  const perUnit = perGram !== null && perUnitRaw === perGram ? null : perUnitRaw
 
   const unitEstimate = (qty: number): Price | null => {
-    if (perUnit === null) return null
+    if (perUnit === null || !countsDiscreteItems(unit)) return null
     const cents = round2(perUnit * qty)
     if (!Number.isFinite(cents)) return null
     return {
@@ -79,7 +101,9 @@ export function calculatePrice(
     }
   }
 
-  // No quantity: best we can offer is the cost of a single unit.
+  // No quantity: best we can offer is the cost of a single unit, and only when
+  // the unit counts items (the gate above rejects "cups of flour, amount
+  // unspecified" rather than pricing it as one flour).
   if (quantity === null) {
     return unitEstimate(1)
   }
@@ -102,6 +126,8 @@ export function calculatePrice(
     }
   }
 
-  // Fallback: single-unit estimate × quantity (covers quantity === 0 → 0).
+  // Fallback: single-unit estimate × quantity (covers quantity === 0 → 0), or
+  // null when the unit isn't countable or the provider's per-unit price is the
+  // disguised per-gram one.
   return unitEstimate(quantity)
 }

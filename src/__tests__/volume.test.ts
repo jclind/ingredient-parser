@@ -18,15 +18,58 @@ describe('volumeToMl', () => {
 })
 
 describe('lookupDensity', () => {
-  it('matches by substring', () => {
+  it('matches a term anywhere in the name', () => {
     expect(lookupDensity('all-purpose flour')).toBe(0.53)
     expect(lookupDensity('extra-virgin olive oil')).toBe(0.92)
     expect(lookupDensity('whole milk')).toBe(1.03)
   })
-  it('prefers more specific entries (brown sugar before sugar)', () => {
+
+  it('matches whole words, not raw substrings', () => {
+    // "boiling water".includes("oil") is true, so this used to return oil's
+    // 0.92 and price boiling water like cooking oil.
+    expect(lookupDensity('boiling water')).toBe(1.0)
+    // and the mirror image: "watermelon" must not resolve to water.
+    expect(lookupDensity('watermelon')).toBeNull()
+  })
+
+  it('prefers the longest matching term, whatever the table order', () => {
     expect(lookupDensity('brown sugar')).toBe(0.72)
     expect(lookupDensity('granulated sugar')).toBe(0.85)
+    expect(lookupDensity('peanut butter')).toBe(1.08) // over 'butter' and 'peanut'
+    expect(lookupDensity('cream cheese')).toBe(0.98) // over 'cream'
+    // 'buttermilk' was unreachable under substring matching: 'butter' hit first
+    // and claimed it at 0.911.
+    expect(lookupDensity('buttermilk')).toBe(1.03)
   })
+
+  it('handles plurals', () => {
+    expect(lookupDensity('rolled oats')).toBe(0.38)
+    expect(lookupDensity('chopped carrots')).toBe(0.54)
+    expect(lookupDensity('chocolate chips')).toBe(0.72)
+  })
+
+  it('resolves the ingredients the original 13-entry table missed', () => {
+    // The exact list from the prod smoke that filed the bug. Every one of these
+    // fell through to the unit estimate and got priced ~236x low.
+    const missed = [
+      'salsa',
+      'yogurt',
+      'shredded cheese',
+      'black beans',
+      'diced tomatoes',
+      'onion',
+      'corn',
+      'rolled oats',
+      'breadcrumbs',
+      'chopped walnuts',
+      'chocolate chips',
+      'soy sauce',
+    ]
+    for (const name of missed) {
+      expect(lookupDensity(name)).not.toBeNull()
+    }
+  })
+
   it('null for unknown ingredient', () => {
     expect(lookupDensity('parsley')).toBeNull()
   })

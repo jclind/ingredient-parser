@@ -4,7 +4,9 @@ Guidance for Claude Code when working in this repo. See `DESIGN.md` for the full
 
 ## What this is
 
-`@jclind/ingredient-parser-v2` — a ground-up rewrite of `@jclind/ingredient-parser` (the sibling `../ingredient-parser`). It parses a natural-language ingredient string into structured data and optionally enriches it with vendor-neutral metadata + a price with provenance. Status: `0.1.0-alpha` (unpublished).
+`@jclind/ingredient-parser` — a ground-up rewrite of the v1 line (the sibling `../ingredient-parser`, still on branch `main` at 1.3.4). It parses a natural-language ingredient string into structured data and optionally enriches it with vendor-neutral metadata + a price with provenance. This repo is branch `2.x` and publishes the **2.x** line of the same npm package; Prepify pins it exactly in `server/package.json`.
+
+Note the npm `latest` dist-tag still pointed at 1.3.4 as of 2026-08-25, because 2.0.0 was published without moving it. Check `npm view @jclind/ingredient-parser version` before assuming what a bare install gets.
 
 Key difference from v1: **no `recipe-ingredient-parser-v3` dependency.** Parsing is a from-scratch single-pass tokenizer, which removed v1's whole tower of regex workarounds (the consecutive-T hack, size-words-as-units, the Italian `q.b.` leak).
 
@@ -47,6 +49,8 @@ One pass: normalize (unicode fractions → ascii, lowercase, length-cap) → joi
 - The client only resolves the image URL at its `imageSize` (`buildImageUrl`) and applies `includeNutrition`.
 - **Name fallback chain:** on a miss, retry with progressively shorter names (drop leading words, most-specific first, cap 4) via `nameCandidates`. Disable with `nameFallbacks:false`. This exists because the proxy is an exact-match cache.
 - **Price is computed client-side** (`enrich/price.ts`) because it depends on the parsed quantity/unit. `Price` carries provenance: `basis:'gram'|'unit-estimate'`, `grams`, `perGramCents`, `confidence:'high'|'low'`. Mass→grams is exact (high); volume→grams uses a density table (`enrich/volume.ts`, low); unconvertible → unit-estimate. Plug a converter via `opts.toGrams`.
+- **The unit-estimate fallback is gated** (2.1.0). It applies only to units that count discrete items, and a `perUnitCents` equal to `perGramCents` is discarded as a disguised per-gram price. Everything else gets `price: null`, which callers must render as "no price", never $0.00. See DESIGN.md §5. Before this, `1 1/3 cup salsa` priced at $0.01.
+- **The density table matches whole words, longest term first** (`enrich/volume.ts`). Not substring, not table order: `"boiling water"` contains `oil`, and `"peanut butter"` has to beat `butter`. Add entries to whichever group reads best; precedence takes care of itself.
 - `enrich/types.ts` — vendor-neutral `IngredientData` (no `any`; opt-in `raw` holds the neutral object).
 
 ### Legacy adapter (`src/legacy/parseIngredientString.ts`)
