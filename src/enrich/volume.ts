@@ -71,7 +71,8 @@ const DENSITIES: { match: string[]; density: number }[] = [
   { match: ['shredded cheese', 'grated cheese', 'parmesan', 'cheddar', 'mozzarella'], density: 0.42 },
 
   // Liquids and condiments
-  { match: ['water', 'broth', 'stock', 'juice', 'wine', 'vinegar'], density: 1.0 },
+  // 'ginger ale'/'ginger beer' are listed only to outrank the `ginger` spice term.
+  { match: ['water', 'broth', 'stock', 'juice', 'wine', 'vinegar', 'ginger ale', 'ginger beer'], density: 1.0 },
   { match: ['soy sauce', 'fish sauce', 'worcestershire'], density: 1.1 },
   { match: ['ketchup'], density: 1.15 },
   { match: ['mustard'], density: 1.05 },
@@ -90,7 +91,9 @@ const DENSITIES: { match: string[]; density: number }[] = [
   { match: ['diced tomatoes', 'crushed tomatoes', 'chopped tomatoes'], density: 1.0 },
   { match: ['onion', 'shallot'], density: 0.68 },
   { match: ['corn'], density: 0.66 },
-  { match: ['bell pepper'], density: 0.63 },
+  // Sweet peppers are spelled out so the bare `pepper` spice term below can't
+  // claim them. "red pepper flakes" is longer still, so it goes back to 0.5.
+  { match: ['bell pepper', 'green pepper', 'red pepper', 'sweet pepper'], density: 0.63 },
   { match: ['carrot'], density: 0.54 },
   { match: ['celery'], density: 0.43 },
   { match: ['mushroom'], density: 0.29 },
@@ -98,8 +101,85 @@ const DENSITIES: { match: string[]; density: number }[] = [
   { match: ['strawberries', 'strawberry', 'blueberries', 'blueberry', 'raspberries', 'raspberry', 'blackberries', 'blackberry'], density: 0.63 },
   { match: ['raisins', 'raisin', 'dried cranberries'], density: 0.61 },
 
-  // Nuts and seasoning
+  // Nuts
   { match: ['walnut', 'pecan', 'almond', 'cashew', 'pistachio', 'peanut'], density: 0.5 },
+
+  // Spices, milled
+  //
+  // A spice is nearly always measured in tsp or tbsp, so with no entry here the
+  // price gate declines and the row reads "needs price" — which was every spice
+  // in every savory recipe until this group existed.
+  //
+  // One density covers the category. A level teaspoon runs 2.1 g (cumin) to
+  // 3.1 g (garlic powder), so 0.43–0.63 g/ml, and 0.5 sits inside the ±20% the
+  // estimate already declares for any volume conversion. Grinding is what
+  // flattens the spread: whole vs ground ginger differ, ground ginger and ground
+  // cinnamon barely do.
+  //
+  // `seasoning` and `spice` deliberately match as bare words so blends come
+  // along free — taco, cajun, pumpkin pie, five-spice. The leafy blends override
+  // that below, since crumbled leaf is a third the weight of powder.
+  {
+    match: [
+      'pepper',
+      'peppercorn',
+      'crushed red pepper',
+      'red pepper flake',
+      'pepper flake',
+      'chili flake',
+      'chile flake',
+      'cayenne',
+      'paprika',
+      'cumin',
+      'coriander',
+      'turmeric',
+      'cinnamon',
+      'nutmeg',
+      'allspice',
+      'clove',
+      'cardamom',
+      'ginger',
+      'chili powder',
+      'chile powder',
+      'chipotle',
+      'garlic powder',
+      'onion powder',
+      'mustard powder',
+      'dry mustard',
+      'curry powder',
+      'seasoning',
+      'spice',
+    ],
+    density: 0.5,
+  },
+
+  // Herbs, dried leaf
+  //
+  // Crumbled leaf is far lighter than powder: a teaspoon of dried oregano is
+  // about 1 g, a teaspoon of cinnamon 2.6 g. Hence a separate group.
+  //
+  // Only herbs that are nearly always dried when a recipe measures them by
+  // volume are listed. Basil, parsley, cilantro, dill, mint, sage, rosemary and
+  // chives are missing on purpose: `parse()` strips "dried" and "fresh" alike,
+  // so "1 tsp dried basil" and "2 tbsp chopped fresh basil" both arrive here as
+  // "basil" and nothing distinguishes them. Fresh chopped runs ~0.25 g/ml, so
+  // guessing either way is wrong by roughly half in one direction. Declining is
+  // the better answer until the parser keeps the qualifier.
+  {
+    match: [
+      'oregano',
+      'thyme',
+      'marjoram',
+      'tarragon',
+      'bay leaf',
+      'bay leaves',
+      'italian seasoning',
+      'herbes de provence',
+      'poultry seasoning',
+    ],
+    density: 0.17,
+  },
+
   { match: ['salt'], density: 1.2 },
 ]
 
