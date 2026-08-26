@@ -7,6 +7,8 @@
 // which over-counts); rounding is to the nearest 1/100 cent and documented.
 
 import type { EstimatedPrices, Price } from './types.js'
+import type { Purpose } from '../core/descriptors.js'
+import { freePrice, isFreeIngredient, isNegligibleAmount } from './free.js'
 
 export interface UnitLike {
   name: string
@@ -64,20 +66,41 @@ export interface ContainerSize {
 }
 
 /**
- * @param quantity  parsed quantity (null = unspecified)
- * @param unit      parsed unit object (null = no unit)
- * @param prices    provider per-name estimates (in cents)
- * @param toGrams   optional converter (defaults to mass-only)
- * @param container optional per-container measure; when present it replaces
- *                  the container unit for pricing
+ * The rest of the parse result that pricing needs. An object rather than more
+ * positional arguments, because the useful facts about an ingredient keep
+ * arriving one at a time and a six-argument call is unreadable.
+ */
+export interface PriceContext {
+  /** per-container measure lifted from a parenthetical; replaces the container unit */
+  container?: ContainerSize | null
+  /** trailing purpose phrase, e.g. 'to taste' */
+  purpose?: Purpose | null
+  /** parsed ingredient name, for the free-by-name check (tap water) */
+  name?: string | null
+}
+
+/**
+ * @param quantity parsed quantity (null = unspecified)
+ * @param unit     parsed unit object (null = no unit)
+ * @param prices   provider per-name estimates (in cents)
+ * @param toGrams  optional converter (defaults to mass-only)
+ * @param ctx      optional container size / purpose / name
  */
 export function calculatePrice(
   quantity: number | null,
   unit: UnitLike | null,
   prices: EstimatedPrices,
   toGrams: ToGrams = defaultToGrams,
-  container: ContainerSize | null = null
+  ctx: PriceContext = {}
 ): Price | null {
+  const { container = null, purpose = null, name = null } = ctx
+
+  // Free beats every other path, including a provider price. Tap water HAS a
+  // per-gram price at the provider (for the bottled kind) and pricing 4 cups of
+  // it at 95 cents is worse than not pricing it at all.
+  if (isFreeIngredient(name)) return freePrice()
+  if (isNegligibleAmount(purpose, quantity, unit !== null)) return freePrice()
+
   // Reject non-finite / negative quantities (a scaled or garbage value) rather
   // than emit a negative or Infinity/NaN price.
   if (quantity !== null && (!Number.isFinite(quantity) || quantity < 0)) return null

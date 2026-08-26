@@ -9,6 +9,7 @@ import type { ParsedIngredientV2 } from '../core/types.js'
 import { calculatePrice, type ToGrams } from './price.js'
 import { makeDensityToGrams } from './volume.js'
 import { buildImageUrl } from './spoonacular.js'
+import { freePrice, isFreeIngredient, isNegligibleAmount } from './free.js'
 import type {
   IngredientData,
   IngredientProvider,
@@ -133,13 +134,35 @@ export function createEnricher(
     // Try the full name first, then fall back to progressively shorter names so
     // a richer parsed name ("boneless chicken breast") can still hit a cache that
     // only indexes the base noun ("chicken breast"). First hit wins.
+    // Whether this row costs nothing is knowable without the provider: tap
+    // water is free however much you use, and "to taste" states outright that
+    // there's no amount to price.
+    const free =
+      isFreeIngredient(name) ||
+      isNegligibleAmount(parsed.purpose, parsed.quantity.value, parsed.unit !== null)
+
     const candidates = opts.nameFallbacks === false ? [name] : nameCandidates(name)
     let result = null
     for (const candidate of candidates) {
       result = await provider.lookup(candidate)
       if (result) break
     }
-    if (!result) return null
+    // The lookup still runs for a free row, because the metadata is worth
+    // having (Prepify shows the ingredient thumbnail). It just isn't allowed to
+    // decide the price. Returning null on a miss would render tap water as
+    // "needs price", which is the bug this exists to fix. The proxy has no
+    // `water` entry at all today.
+    if (!result) {
+      if (!free) return null
+      return {
+        name,
+        category: null,
+        image: null,
+        possibleUnits: [],
+        nutrition: null,
+        price: freePrice(),
+      }
+    }
 
     // Default to a density-aware converter bound to this ingredient, so volume
     // units (cup of flour) get an estimated gram price; opt out via opts.toGrams.
@@ -149,7 +172,11 @@ export function createEnricher(
       parsed.unit,
       result.estimatedPrices,
       toGrams,
-      parsed.containerSize ?? null
+      {
+        container: parsed.containerSize ?? null,
+        purpose: parsed.purpose ?? null,
+        name,
+      }
     )
 
     return { ...result.data, price }

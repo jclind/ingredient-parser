@@ -21,7 +21,12 @@ export interface IngredientData {
  */
 export interface Price {
   cents: number // estimated total for the parsed quantity, in US cents
-  basis: 'gram' | 'unit-estimate' // gram-accurate vs single-unit fallback
+  // 'gram'          — gram-accurate, from a per-gram price
+  // 'unit-estimate' — single-unit price multiplied by a count
+  // 'free'          — genuinely costs nothing (tap water; "salt to taste").
+  //                   Always cents 0 at high confidence. A provider price of 0
+  //                   means "no data" here, so a real zero needs its own basis.
+  basis: 'gram' | 'unit-estimate' | 'free'
   grams: number | null // grams used when basis === 'gram'
   perGramCents: number | null
   confidence: 'high' | 'low' // 'low' when the unit wasn't gram-convertible

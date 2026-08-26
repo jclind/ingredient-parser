@@ -127,11 +127,41 @@ export function joinHyphenatedDescriptors(text: string): string {
   return text.replace(re, '$1 ')
 }
 
-/** Strip trailing purpose phrases ("for garnish", "to taste", ...). */
-export function stripTrailingPurpose(text: string): string {
-  const re =
-    /[,\s]+(for\s+(the\s+)?(garnish|serving|topping)|to\s+(garnish|serve|taste))\s*$/i
-  return text.replace(re, '')
+// Canonical purpose phrases. The spellings authors use collapse onto these:
+// "to serve" and "for serving" are the same instruction, and a consumer
+// shouldn't have to know both.
+export type Purpose = 'to taste' | 'as needed' | 'for garnish' | 'for serving' | 'for topping'
+
+const PURPOSE_RE =
+  /[,\s]+(?:or\s+)?(for\s+(?:the\s+)?(?:garnish|serving|topping)|to\s+(?:garnish|serve|taste)|as\s+(?:needed|required|desired))\s*$/i
+
+const PURPOSE_CANON: Record<string, Purpose> = {
+  'to taste': 'to taste',
+  'as needed': 'as needed',
+  'as required': 'as needed',
+  'as desired': 'as needed',
+  'for garnish': 'for garnish',
+  'to garnish': 'for garnish',
+  'for the garnish': 'for garnish',
+  'for serving': 'for serving',
+  'to serve': 'for serving',
+  'for the serving': 'for serving',
+  'for topping': 'for topping',
+  'for the topping': 'for topping',
+}
+
+/**
+ * Strip a trailing purpose phrase and report which one it was.
+ *
+ * The phrase used to be deleted outright. It carries real meaning though:
+ * "salt to taste" states that no amount exists, which is different from an
+ * author who forgot one, and only the phrase tells the two apart.
+ */
+export function stripTrailingPurpose(text: string): { text: string; purpose: Purpose | null } {
+  const m = text.match(PURPOSE_RE)
+  if (!m) return { text, purpose: null }
+  const canon = PURPOSE_CANON[m[1].toLowerCase().replace(/\s+/g, ' ')] ?? null
+  return { text: text.replace(PURPOSE_RE, ''), purpose: canon }
 }
 
 /** dedupe preserving first-seen order */

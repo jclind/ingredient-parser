@@ -1,4 +1,5 @@
 import type { UnitType, UnitSystem } from './units.js'
+import type { Purpose } from './descriptors.js'
 
 /** The richer v2 parse result. */
 export interface ParsedIngredientV2 {
@@ -37,6 +38,13 @@ export interface ParsedIngredientV2 {
       system: UnitSystem
     }
   } | null
+  /**
+   * The trailing purpose phrase, normalized: "salt to taste" → 'to taste'.
+   * Null when the string carried none. This is the only thing that separates
+   * "no amount was given because none exists" from "the author forgot one",
+   * which is why pricing reads it rather than reading a missing quantity.
+   */
+  purpose: Purpose | null
   comment: string | null       // raw text after comma + parenthetical; null when absent
   original: string
 }

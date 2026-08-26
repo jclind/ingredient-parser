@@ -335,4 +335,60 @@ describe('parse — v2 rich output', () => {
       expect(parse('1 can (oz) black beans').containerSize).toBeNull()
     })
   })
+
+  describe('purpose — the phrase that says no amount exists', () => {
+    it('records "to taste" instead of only deleting it', () => {
+      const r = parse('salt and pepper to taste')
+      expect(r.purpose).toBe('to taste')
+      expect(r.ingredient.name).toBe('salt and pepper')
+      expect(r.quantity.value).toBeNull()
+    })
+
+    it('records it after a comma too', () => {
+      expect(parse('pepper, to taste').purpose).toBe('to taste')
+    })
+
+    // "as needed" was not in the strip list, so it stayed in the name and the
+    // proxy lookup for "salt as needed" missed outright — no price AND no image.
+    it('strips and records "as needed"', () => {
+      const r = parse('salt as needed')
+      expect(r.purpose).toBe('as needed')
+      expect(r.ingredient.name).toBe('salt')
+    })
+
+    it('folds "as required" and "as desired" onto "as needed"', () => {
+      expect(parse('salt as required').purpose).toBe('as needed')
+      expect(parse('black pepper, as desired').purpose).toBe('as needed')
+    })
+
+    it('folds the garnish and serving spellings onto one form each', () => {
+      expect(parse('parsley, for garnish').purpose).toBe('for garnish')
+      expect(parse('parsley to garnish').purpose).toBe('for garnish')
+      expect(parse('lemon wedges, for serving').purpose).toBe('for serving')
+      expect(parse('lemon wedges to serve').purpose).toBe('for serving')
+      expect(parse('cheese, for topping').purpose).toBe('for topping')
+    })
+
+    it('handles the "or to taste" phrasing', () => {
+      const r = parse('1 tsp salt, or to taste')
+      expect(r.purpose).toBe('to taste')
+      expect(r.ingredient.name).toBe('salt')
+    })
+
+    it('keeps the quantity when one was given', () => {
+      const r = parse('1 tsp salt to taste')
+      expect(r.purpose).toBe('to taste')
+      expect(r.quantity.value).toBe(1)
+      expect(r.unit?.name).toBe('teaspoon')
+    })
+
+    it('is null when no phrase is present', () => {
+      expect(parse('flour').purpose).toBeNull()
+      expect(parse('2 cups flour').purpose).toBeNull()
+    })
+
+    it('only matches at the end, not mid-string', () => {
+      expect(parse('taste of home seasoning').purpose).toBeNull()
+    })
+  })
 })

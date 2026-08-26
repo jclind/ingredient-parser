@@ -158,8 +158,7 @@ describe('calculatePrice — container sizes', () => {
     // Without the container size this returned null, because a can has no
     // honest per-unit price for a bulk good.
     const p = calculatePrice(1, can, { perGramCents: 0.15 }, defaultToGrams, {
-      value: 15,
-      unit: ounce,
+      container: { value: 15, unit: ounce },
     })
     expect(p?.basis).toBe('gram')
     expect(p?.grams).toBeCloseTo(425.24, 1)
@@ -168,8 +167,7 @@ describe('calculatePrice — container sizes', () => {
 
   it('matches the price of the same amount written as a bare mass', () => {
     const viaCan = calculatePrice(1, can, { perGramCents: 0.15 }, defaultToGrams, {
-      value: 15,
-      unit: ounce,
+      container: { value: 15, unit: ounce },
     })
     const viaMass = calculatePrice(15, ounce, { perGramCents: 0.15 })
     expect(viaCan).toEqual(viaMass)
@@ -178,16 +176,14 @@ describe('calculatePrice — container sizes', () => {
   it('multiplies by the container count', () => {
     // 2 cans x 14.5 oz = 29 oz
     const p = calculatePrice(2, can, { perGramCents: 0.2 }, defaultToGrams, {
-      value: 14.5,
-      unit: ounce,
+      container: { value: 14.5, unit: ounce },
     })
     expect(p?.grams).toBeCloseTo(28.349523125 * 29, 4)
   })
 
   it('keeps mass conversions high-confidence', () => {
     const p = calculatePrice(1, can, { perGramCents: 0.15 }, defaultToGrams, {
-      value: 15,
-      unit: ounce,
+      container: { value: 15, unit: ounce },
     })
     expect(p?.confidence).toBe('high')
   })
@@ -195,16 +191,14 @@ describe('calculatePrice — container sizes', () => {
   it('a volume container size still needs a density converter', () => {
     // defaultToGrams is mass-only, so fluid ounces decline rather than guess
     const p = calculatePrice(1, can, { perGramCents: 0.15 }, defaultToGrams, {
-      value: 12,
-      unit: flOunce,
+      container: { value: 12, unit: flOunce },
     })
     expect(p).toBeNull()
   })
 
   it('falls back to the unit estimate when there is no per-gram price', () => {
     const p = calculatePrice(2, can, { perUnitCents: 99 }, defaultToGrams, {
-      value: 15,
-      unit: ounce,
+      container: { value: 15, unit: ounce },
     })
     expect(p).toMatchObject({ cents: 198, basis: 'unit-estimate' })
   })
@@ -212,8 +206,7 @@ describe('calculatePrice — container sizes', () => {
   it('ignores a zero or negative container size', () => {
     for (const value of [0, -5, NaN, Infinity]) {
       const p = calculatePrice(2, can, { perGramCents: 5, perUnitCents: 30 }, defaultToGrams, {
-        value,
-        unit: ounce,
+        container: { value, unit: ounce },
       })
       expect(p).toMatchObject({ cents: 60, basis: 'unit-estimate' })
     }
@@ -222,5 +215,79 @@ describe('calculatePrice — container sizes', () => {
   it('no container size behaves exactly as before', () => {
     const p = calculatePrice(2, can, { perGramCents: 5, perUnitCents: 30 })
     expect(p).toMatchObject({ cents: 60, basis: 'unit-estimate' })
+  })
+})
+
+describe('calculatePrice — free', () => {
+  const cup: UnitLike = { name: 'cup', type: 'volume' }
+
+  it('prices tap water at zero however much a recipe uses', () => {
+    const p = calculatePrice(4, cup, { perGramCents: 0.1 }, defaultToGrams, {
+      name: 'boiling water',
+    })
+    expect(p).toEqual({
+      cents: 0,
+      basis: 'free',
+      grams: null,
+      perGramCents: null,
+      confidence: 'high',
+    })
+  })
+
+  // The provider genuinely has a per-gram price for water — for the bottled
+  // kind. Free has to beat it, or the gram path wins and every soup is dearer.
+  it('free beats an available per-gram price', () => {
+    const priced = calculatePrice(100, gram, { perGramCents: 0.5 }, defaultToGrams, {
+      name: 'water',
+    })
+    expect(priced?.basis).toBe('free')
+  })
+
+  it('leaves a bought water priced', () => {
+    const p = calculatePrice(100, gram, { perGramCents: 0.5 }, defaultToGrams, {
+      name: 'coconut water',
+    })
+    expect(p?.basis).toBe('gram')
+    expect(p?.cents).toBe(50)
+  })
+
+  it('prices an unmeasured seasoning at zero', () => {
+    const p = calculatePrice(null, null, { perGramCents: 0.11 }, defaultToGrams, {
+      purpose: 'to taste',
+      name: 'salt',
+    })
+    expect(p).toMatchObject({ cents: 0, basis: 'free', confidence: 'high' })
+  })
+
+  it('a measured amount beats the phrase', () => {
+    const p = calculatePrice(5, gram, { perGramCents: 0.11 }, defaultToGrams, {
+      purpose: 'to taste',
+      name: 'salt',
+    })
+    expect(p).toMatchObject({ basis: 'gram', cents: 0.55 })
+  })
+
+  // The failure mode this whole line of work exists to kill: a missing amount
+  // is an UNKNOWN cost, and silently calling it zero understates the recipe.
+  it('does not zero a bare ingredient with no phrase', () => {
+    const p = calculatePrice(null, null, { perGramCents: 0.11 }, defaultToGrams, {
+      name: 'flour',
+    })
+    expect(p).toBeNull()
+  })
+
+  it('does not zero a garnish', () => {
+    const p = calculatePrice(null, null, { perGramCents: 0.11 }, defaultToGrams, {
+      purpose: 'for garnish',
+      name: 'parsley',
+    })
+    expect(p?.basis).not.toBe('free')
+  })
+
+  it('an empty context behaves exactly as before', () => {
+    expect(calculatePrice(100, gram, { perGramCents: 0.5 })).toMatchObject({
+      basis: 'gram',
+      cents: 50,
+    })
   })
 })

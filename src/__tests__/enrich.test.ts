@@ -225,6 +225,49 @@ describe('createEnricher', () => {
     expect(data?.price).toBeNull()
   })
 
+  // The proxy has no `water` entry at all, so this row used to come back with no
+  // ingredientData whatsoever and render as "needs price".
+  it('prices tap water free even when the lookup misses entirely', async () => {
+    const enrich = createEnricher({ transport: async () => res(404, {}) })
+    const data = await enrich(parse('4 cups boiling water'))
+    expect(data).not.toBeNull()
+    expect(data?.name).toBe('boiling water')
+    expect(data?.price).toMatchObject({ cents: 0, basis: 'free', confidence: 'high' })
+  })
+
+  it('prices an unmeasured seasoning free even when the lookup misses', async () => {
+    const enrich = createEnricher({ transport: async () => res(404, {}) })
+    const data = await enrich(parse('salt and pepper to taste'))
+    expect(data?.price).toMatchObject({ cents: 0, basis: 'free' })
+  })
+
+  // A miss is still a miss for everything else. Only a row we KNOW is free gets
+  // rescued; inventing data for an unknown ingredient would be worse than null.
+  it('still returns null when a non-free lookup misses', async () => {
+    const enrich = createEnricher({ transport: async () => res(404, {}) })
+    expect(await enrich(parse('2 cups flour'))).toBeNull()
+    expect(await enrich(parse('parsley, for garnish'))).toBeNull()
+  })
+
+  it('keeps the provider metadata on a free row when the lookup hits', async () => {
+    const enrich = createEnricher({
+      transport: async () => res(200, { data: neutral({ name: 'table salt' }) }),
+    })
+    const data = await enrich(parse('salt to taste'))
+    // the thumbnail is why the lookup still runs for a free row
+    expect(data?.name).toBe('table salt')
+    expect(data?.image).not.toBeNull()
+    expect(data?.price).toMatchObject({ cents: 0, basis: 'free' })
+  })
+
+  it('a measured seasoning is priced normally, phrase or no phrase', async () => {
+    const enrich = createEnricher({
+      transport: async () => res(200, { data: neutral({ name: 'table salt' }) }),
+    })
+    const data = await enrich(parse('200 g salt, to taste'))
+    expect(data?.price).toMatchObject({ basis: 'gram', grams: 200 })
+  })
+
   it('opts.toGrams overrides the default density converter', async () => {
     const enrich = createEnricher({
       transport: async () => res(200, { data: neutral() }),

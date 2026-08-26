@@ -97,7 +97,9 @@ export function parse(input: unknown): ParsedIngredientV2 {
 
   // 2. structural pre-processing (must run before comma split)
   working = joinHyphenatedDescriptors(working)
-  working = stripTrailingPurpose(working)
+  const purposeSplit = stripTrailingPurpose(working)
+  working = purposeSplit.text
+  const purpose = purposeSplit.purpose
 
   // 3. comment = every parenthetical's content + text after the first comma.
   //    Only touch parens when a closing paren exists — an unbalanced "((((" is
@@ -217,6 +219,7 @@ export function parse(input: unknown): ParsedIngredientV2 {
       preparation,
     },
     containerSize,
+    purpose,
     comment,
     original,
   }
