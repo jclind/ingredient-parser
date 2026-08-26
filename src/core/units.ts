@@ -62,6 +62,14 @@ export const UNITS: UnitDef[] = [
     aliases: ['package', 'packages', 'pkg', 'pkgs'] },
   { name: 'bag', plural: 'bags', symbol: null, type: 'count', system: 'none', aliases: ['bag', 'bags'] },
   { name: 'box', plural: 'boxes', symbol: null, type: 'count', system: 'none', aliases: ['box', 'boxes'] },
+  { name: 'jar', plural: 'jars', symbol: null, type: 'count', system: 'none', aliases: ['jar', 'jars'] },
+  { name: 'bottle', plural: 'bottles', symbol: null, type: 'count', system: 'none',
+    aliases: ['bottle', 'bottles'] },
+  { name: 'tin', plural: 'tins', symbol: null, type: 'count', system: 'none', aliases: ['tin', 'tins'] },
+  { name: 'carton', plural: 'cartons', symbol: null, type: 'count', system: 'none',
+    aliases: ['carton', 'cartons'] },
+  { name: 'container', plural: 'containers', symbol: null, type: 'count', system: 'none',
+    aliases: ['container', 'containers'] },
   { name: 'stick', plural: 'sticks', symbol: null, type: 'count', system: 'none', aliases: ['stick', 'sticks'] },
   { name: 'clove', plural: 'cloves', symbol: null, type: 'count', system: 'none', aliases: ['clove', 'cloves'] },
   { name: 'slice', plural: 'slices', symbol: null, type: 'count', system: 'none', aliases: ['slice', 'slices'] },
@@ -92,6 +100,26 @@ interface AliasEntry {
 export const ALIAS_TABLE: AliasEntry[] = UNITS.flatMap(def =>
   def.aliases.map(alias => ({ alias: alias.toLowerCase(), def }))
 ).sort((a, b) => b.alias.length - a.alias.length)
+
+// Containers a shopper buys as one item, whose real measure is usually written
+// alongside it: "1 can (15 oz) black beans". The container name alone can't be
+// priced (nobody sells "one can" of anything in the abstract), so when a
+// parenthetical carries a mass or volume the parser records it as
+// `containerSize` and pricing uses that instead. See parse.ts step 5b.
+//
+// `stick` is deliberately out: "1 stick (1/2 cup) butter" would work, but the
+// word also means celery and cinnamon, and butter is the only common case.
+export const CONTAINER_UNITS = new Set([
+  'can',
+  'jar',
+  'bottle',
+  'package',
+  'bag',
+  'box',
+  'tin',
+  'carton',
+  'container',
+])
 
 // Count units where the unit IS the ingredient (e.g. "2 bay leaves" has no
 // separate noun). When one of these consumes the whole line, the parser uses

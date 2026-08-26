@@ -4,11 +4,18 @@
 // Pipeline (one path — informal units flow through the same cleanup stages):
 //   normalize → join hyphenated descriptors → strip trailing purpose →
 //   split comment (parens + comma) → inverted-form lift →
-//   informal-or-quantity → unit match → descriptor/prep extraction
+//   informal-or-quantity → unit match → container-size lift →
+//   descriptor/prep extraction
 
 import { convertFractions } from './fractions.js'
 import { parseQuantity } from './quantity.js'
-import { matchLeadingUnit, SELF_NAMING_UNITS, UNITS, type UnitDef } from './units.js'
+import {
+  CONTAINER_UNITS,
+  matchLeadingUnit,
+  SELF_NAMING_UNITS,
+  UNITS,
+  type UnitDef,
+} from './units.js'
 import {
   extractDescriptors,
   joinHyphenatedDescriptors,
@@ -39,6 +46,41 @@ function toUnit(def: UnitDef | null | undefined) {
     type: def.type,
     system: def.system,
   }
+}
+
+// Words allowed to trail a container measure inside a parenthetical. "each" and
+// "total" are how authors write the multiplier. Anything else means the
+// parenthetical is prose, not a measure, so it is ignored.
+const MEASURE_TRAILERS = new Set(['', 'each', 'total'])
+
+const CONTAINER_DEFS = UNITS.filter(u => CONTAINER_UNITS.has(u.name))
+
+/**
+ * Read a mass or volume measure from a parenthetical: "15 oz", "about 14.5 oz
+ * each", "15 ounce can". Returns null when the text isn't a clean measure.
+ * Declining keeps "(optional)" and "(from 2 lemons)" out of the quantity.
+ *
+ * `container` is set when the container word sits INSIDE the parens, as in
+ * "1 (15 ounce can) black beans". There the head has no unit at all, so the
+ * caller adopts this one.
+ */
+function parseContainerMeasure(
+  text: string
+): { value: number; def: UnitDef; container: UnitDef | null } | null {
+  const q = parseQuantity(text)
+  if (q.value === null || !Number.isFinite(q.value) || q.value <= 0) return null
+  const m = matchLeadingUnit(q.rest)
+  if (!m) return null
+  if (m.def.type !== 'mass' && m.def.type !== 'volume') return null
+
+  const trailer = m.rest.trim()
+  if (MEASURE_TRAILERS.has(trailer)) {
+    return { value: q.value, def: m.def, container: null }
+  }
+  const container = CONTAINER_DEFS.find(
+    u => u.name === trailer || u.plural === trailer
+  )
+  return container ? { value: q.value, def: m.def, container } : null
 }
 
 const QTY_ONE = { value: 1, min: 1, max: 1, isRange: false, isApproximate: false }
@@ -125,6 +167,35 @@ export function parse(input: unknown): ParsedIngredientV2 {
     nameText = (unitMatch ? unitMatch.rest : rest).replace(/^of\s+/i, '')
   }
 
+  // 5b. container-size lift. "1 can (15 oz) black beans" describes 15 oz of
+  //     beans; the can is packaging. Nobody sells "one can" as a priceable
+  //     item, so without this the measure sits in the comment as prose and the
+  //     ingredient can't be priced at all. The parenthetical is read as the
+  //     size of ONE container. "2 cans (14.5 oz each)" and the far more common
+  //     "2 cans (14.5 oz)" both mean 14.5 oz per can, so consumers multiply by
+  //     `quantity`. Only the first parseable parenthetical is taken.
+  //
+  //     The measure stays in `comment` as well. `comment` is documented as the
+  //     raw text, v1 consumers read it to show the can size on the page, and a
+  //     cook shopping for the recipe wants to see "15 oz" there. Structured and
+  //     raw overlapping is already how `preparation` and `descriptors` work.
+  let containerSize: ParsedIngredientV2['containerSize'] = null
+  const unitIsContainer = !!unitDef && CONTAINER_UNITS.has(unitDef.name)
+  if (unitIsContainer || !unitDef) {
+    for (const paren of parenContents) {
+      const measure = parseContainerMeasure(paren)
+      if (!measure) continue
+      // Only adopt a container from inside the parens when the head supplied
+      // no unit. "2 cups (500 ml) milk" already has a real unit and must keep it.
+      if (!unitIsContainer) {
+        if (!measure.container) continue
+        unitDef = measure.container
+      }
+      containerSize = { value: measure.value, unit: toUnit(measure.def)! }
+      break
+    }
+  }
+
   // 6. ingredient name + structured descriptors / preparation
   const split = extractDescriptors(nameText.replace(/\s{2,}/g, ' ').trim())
   // a self-naming unit ("2 bay leaves") IS the ingredient when nothing else remains
@@ -145,6 +216,7 @@ export function parse(input: unknown): ParsedIngredientV2 {
       descriptors: dedupe(split.descriptors),
       preparation,
     },
+    containerSize,
     comment,
     original,
   }

@@ -148,7 +148,8 @@ export function createEnricher(
       parsed.quantity.value,
       parsed.unit,
       result.estimatedPrices,
-      toGrams
+      toGrams,
+      parsed.containerSize ?? null
     )
 
     return { ...result.data, price }

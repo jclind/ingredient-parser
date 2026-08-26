@@ -244,4 +244,95 @@ describe('parse — v2 rich output', () => {
       expect(() => parse('!!! $$$')).not.toThrow()
     })
   })
+
+  // "1 can (15 oz) black beans" priced as one can and declined, while
+  // "15 oz black beans" priced fine. The size on the label was parsed and then
+  // left in the comment as prose.
+  describe('containerSize — the measure on a container label', () => {
+    it('lifts the parenthetical measure off a can', () => {
+      const r = parse('1 can (15 oz) black beans, drained and rinsed')
+      expect(r.quantity.value).toBe(1)
+      expect(r.unit?.name).toBe('can')
+      expect(r.containerSize).toEqual({
+        value: 15,
+        unit: expect.objectContaining({ name: 'ounce', type: 'mass' }),
+      })
+    })
+
+    it('keeps the measure in the comment too, so display is unchanged', () => {
+      const r = parse('1 can (15 oz) black beans, drained and rinsed')
+      expect(r.comment).toContain('15 oz')
+      expect(r.ingredient.name).toBe('black beans')
+    })
+
+    it('handles the parenthetical-before-unit phrasing', () => {
+      const r = parse('1 (15 ounce) can black beans')
+      expect(r.containerSize?.value).toBe(15)
+      expect(r.containerSize?.unit.name).toBe('ounce')
+    })
+
+    it('reads "15 ounce can" inside the parens', () => {
+      const r = parse('1 (15 ounce can) black beans')
+      expect(r.containerSize?.value).toBe(15)
+      expect(r.containerSize?.unit.name).toBe('ounce')
+    })
+
+    it('is per container, not a total — "2 cans (14.5 oz each)"', () => {
+      const r = parse('2 cans (14.5 oz each) diced tomatoes')
+      expect(r.quantity.value).toBe(2)
+      expect(r.containerSize?.value).toBe(14.5)
+    })
+
+    it('reads a bare plural the same way ("2 cans (14.5 oz)")', () => {
+      const r = parse('2 cans (14.5 oz) diced tomatoes')
+      expect(r.containerSize?.value).toBe(14.5)
+    })
+
+    it('handles an approximate size', () => {
+      const r = parse('1 package (about 10 oz) frozen spinach')
+      expect(r.containerSize?.value).toBe(10)
+    })
+
+    it('takes volume measures as well as mass', () => {
+      const r = parse('1 bottle (12 fl oz) beer')
+      expect(r.unit?.name).toBe('bottle')
+      expect(r.containerSize?.unit.name).toBe('fluid ounce')
+    })
+
+    it('works across the container vocabulary', () => {
+      for (const word of ['jar', 'bottle', 'tin', 'carton', 'container', 'box', 'bag']) {
+        const r = parse(`1 ${word} (16 oz) salsa`)
+        expect(r.unit?.name).toBe(word)
+        expect(r.containerSize?.value).toBe(16)
+        // the container word must not leak into the name, which is the string
+        // the enricher looks up
+        expect(r.ingredient.name).toBe('salsa')
+      }
+    })
+
+    it('is null when the unit is not a container', () => {
+      expect(parse('1 large onion (about 200 g), diced').containerSize).toBeNull()
+      expect(parse('2 cups (500 ml) milk').containerSize).toBeNull()
+    })
+
+    it('is null when the container has no size', () => {
+      expect(parse('1 can black beans').containerSize).toBeNull()
+    })
+
+    it('ignores parentheticals that are prose, not measures', () => {
+      expect(parse('1 can (optional) black beans').containerSize).toBeNull()
+      expect(parse('1 can (drained) black beans').containerSize).toBeNull()
+      expect(parse('1 can (or 2 if you like heat) chipotles').containerSize).toBeNull()
+    })
+
+    it('ignores a count measure in the parens', () => {
+      // "(2 cloves)" is not a size, and pricing 1 x 2 cloves would be wrong
+      expect(parse('1 jar (2 cloves) garlic').containerSize).toBeNull()
+    })
+
+    it('rejects a zero or missing quantity in the parens', () => {
+      expect(parse('1 can (0 oz) black beans').containerSize).toBeNull()
+      expect(parse('1 can (oz) black beans').containerSize).toBeNull()
+    })
+  })
 })

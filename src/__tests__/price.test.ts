@@ -148,3 +148,79 @@ describe('calculatePrice — the unit-estimate gate', () => {
     ).toMatchObject({ cents: 123.05, basis: 'gram', confidence: 'low' })
   })
 })
+
+describe('calculatePrice — container sizes', () => {
+  const ounce: UnitLike = { name: 'ounce', type: 'mass' }
+  const flOunce: UnitLike = { name: 'fluid ounce', type: 'volume' }
+
+  it('prices the label measure instead of declining on the container', () => {
+    // "1 can (15 oz) black beans" at 0.15 c/g: 15 oz = 425.24 g = ~64 cents.
+    // Without the container size this returned null, because a can has no
+    // honest per-unit price for a bulk good.
+    const p = calculatePrice(1, can, { perGramCents: 0.15 }, defaultToGrams, {
+      value: 15,
+      unit: ounce,
+    })
+    expect(p?.basis).toBe('gram')
+    expect(p?.grams).toBeCloseTo(425.24, 1)
+    expect(p?.cents).toBeCloseTo(63.79, 1)
+  })
+
+  it('matches the price of the same amount written as a bare mass', () => {
+    const viaCan = calculatePrice(1, can, { perGramCents: 0.15 }, defaultToGrams, {
+      value: 15,
+      unit: ounce,
+    })
+    const viaMass = calculatePrice(15, ounce, { perGramCents: 0.15 })
+    expect(viaCan).toEqual(viaMass)
+  })
+
+  it('multiplies by the container count', () => {
+    // 2 cans x 14.5 oz = 29 oz
+    const p = calculatePrice(2, can, { perGramCents: 0.2 }, defaultToGrams, {
+      value: 14.5,
+      unit: ounce,
+    })
+    expect(p?.grams).toBeCloseTo(28.349523125 * 29, 4)
+  })
+
+  it('keeps mass conversions high-confidence', () => {
+    const p = calculatePrice(1, can, { perGramCents: 0.15 }, defaultToGrams, {
+      value: 15,
+      unit: ounce,
+    })
+    expect(p?.confidence).toBe('high')
+  })
+
+  it('a volume container size still needs a density converter', () => {
+    // defaultToGrams is mass-only, so fluid ounces decline rather than guess
+    const p = calculatePrice(1, can, { perGramCents: 0.15 }, defaultToGrams, {
+      value: 12,
+      unit: flOunce,
+    })
+    expect(p).toBeNull()
+  })
+
+  it('falls back to the unit estimate when there is no per-gram price', () => {
+    const p = calculatePrice(2, can, { perUnitCents: 99 }, defaultToGrams, {
+      value: 15,
+      unit: ounce,
+    })
+    expect(p).toMatchObject({ cents: 198, basis: 'unit-estimate' })
+  })
+
+  it('ignores a zero or negative container size', () => {
+    for (const value of [0, -5, NaN, Infinity]) {
+      const p = calculatePrice(2, can, { perGramCents: 5, perUnitCents: 30 }, defaultToGrams, {
+        value,
+        unit: ounce,
+      })
+      expect(p).toMatchObject({ cents: 60, basis: 'unit-estimate' })
+    }
+  })
+
+  it('no container size behaves exactly as before', () => {
+    const p = calculatePrice(2, can, { perGramCents: 5, perUnitCents: 30 })
+    expect(p).toMatchObject({ cents: 60, basis: 'unit-estimate' })
+  })
+})

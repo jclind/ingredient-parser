@@ -192,6 +192,39 @@ describe('createEnricher', () => {
     expect(data?.price).toMatchObject({ basis: 'unit-estimate', cents: 178, confidence: 'low' })
   })
 
+  it('prices a can by the size on its label, end to end', async () => {
+    const enrich = createEnricher({
+      transport: async () =>
+        res(200, {
+          data: neutral({
+            name: 'black beans',
+            // A bulk good: the proxy's per-unit price is the per-gram one in
+            // disguise, so it gets dropped and the can alone can't be priced.
+            estimatedPrices: { perGramCents: 0.15, perUnitCents: 0.15 },
+          }),
+        }),
+    })
+    const withCan = await enrich(parse('1 can (15 oz) black beans, drained and rinsed'))
+    const withMass = await enrich(parse('15 oz black beans'))
+    expect(withCan?.price).toMatchObject({ basis: 'gram', confidence: 'high' })
+    expect(withCan?.price?.cents).toBeCloseTo(63.79, 1)
+    expect(withCan?.price?.cents).toBe(withMass?.price?.cents)
+  })
+
+  it('a container with no label size still declines rather than guessing', async () => {
+    const enrich = createEnricher({
+      transport: async () =>
+        res(200, {
+          data: neutral({
+            name: 'black beans',
+            estimatedPrices: { perGramCents: 0.15, perUnitCents: 0.15 },
+          }),
+        }),
+    })
+    const data = await enrich(parse('1 can black beans'))
+    expect(data?.price).toBeNull()
+  })
+
   it('opts.toGrams overrides the default density converter', async () => {
     const enrich = createEnricher({
       transport: async () => res(200, { data: neutral() }),

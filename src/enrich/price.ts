@@ -40,12 +40,6 @@ export const defaultToGrams: ToGrams = (quantity, unit) => {
 
 const round2 = (cents: number) => Math.round(cents * 100) / 100
 
-/**
- * @param quantity parsed quantity (null = unspecified)
- * @param unit     parsed unit object (null = no unit)
- * @param prices   provider per-name estimates (in cents)
- * @param toGrams  optional converter (defaults to mass-only)
- */
 // A usable price is a positive finite number. A provider price of exactly 0 is
 // treated as "no data" (not a confident $0.00) — e.g. the proxy returns
 // perGramCents:0 for ingredients it has no real cost for. Conflating "free"
@@ -63,11 +57,26 @@ const usablePrice = (n: unknown): number | null =>
 const countsDiscreteItems = (unit: UnitLike | null): boolean =>
   unit === null || unit.type === 'count' || unit.type === 'informal'
 
+/** A container unit's real measure, per container (parse.ts `containerSize`). */
+export interface ContainerSize {
+  value: number
+  unit: UnitLike
+}
+
+/**
+ * @param quantity  parsed quantity (null = unspecified)
+ * @param unit      parsed unit object (null = no unit)
+ * @param prices    provider per-name estimates (in cents)
+ * @param toGrams   optional converter (defaults to mass-only)
+ * @param container optional per-container measure; when present it replaces
+ *                  the container unit for pricing
+ */
 export function calculatePrice(
   quantity: number | null,
   unit: UnitLike | null,
   prices: EstimatedPrices,
-  toGrams: ToGrams = defaultToGrams
+  toGrams: ToGrams = defaultToGrams,
+  container: ContainerSize | null = null
 ): Price | null {
   // Reject non-finite / negative quantities (a scaled or garbage value) rather
   // than emit a negative or Infinity/NaN price.
@@ -108,10 +117,23 @@ export function calculatePrice(
     return unitEstimate(1)
   }
 
+  // A container ("1 can", "2 jars") is packaging, not an amount, so when parse
+  // recovered the size on the label we price that instead: 2 cans x 14.5 oz =
+  // 29 oz of tomatoes. The size is per container, hence the multiply. Note this
+  // is the NET weight printed on the can, not the drained weight. That is the
+  // right basis for cost, since you pay for the whole can, even though the
+  // yield after draining is smaller.
+  let pricingQuantity = quantity
+  let pricingUnit = unit
+  if (container !== null && Number.isFinite(container.value) && container.value > 0) {
+    pricingQuantity = quantity * container.value
+    pricingUnit = container.unit
+  }
+
   // Gram path: unit converts to grams and we have a per-gram price. Confidence
   // is 'high' only for exact (mass) conversions; density-estimated volume is 'low'.
-  if (unit && perGram !== null) {
-    const conv = toGrams(quantity, unit)
+  if (pricingUnit && perGram !== null) {
+    const conv = toGrams(pricingQuantity, pricingUnit)
     if (conv !== null) {
       const cents = round2(conv.grams * perGram)
       if (Number.isFinite(cents)) {
