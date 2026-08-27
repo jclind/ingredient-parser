@@ -23,6 +23,8 @@ parse('1 1/2 cups all-purpose flour, sifted')
 //   quantity:  { value: 1.5, min: 1.5, max: 1.5, isRange: false, isApproximate: false },
 //   unit:      { name: 'cup', plural: 'cups', symbol: 'c', type: 'volume', system: 'us' },
 //   ingredient:{ name: 'all-purpose flour', descriptors: [], preparation: ['sifted'] },
+//   containerSize: null,
+//   purpose:   null,
 //   comment:   'sifted',
 //   original:  '1 1/2 cups all-purpose flour, sifted'
 // }
@@ -54,7 +56,11 @@ Lower-level building blocks if you want to enrich an already-parsed object or in
 A v1-compatible adapter that projects the rich result to the **flat v1 shape** (`quantity`/`unit`/`unitPlural`/`symbol`/`ingredient`/`minQty`/`maxQty`/`comment`/`originalIngredientString`). Use this to migrate from v1 with minimal code changes.
 
 ### `calculatePrice` / `defaultToGrams` / `buildImageUrl` / `UNITS`
-Exported utilities; `UNITS` is the full unit registry.
+Exported utilities; `UNITS` is the full unit registry, `CONTAINER_UNITS` the subset that holds a measure on the label.
+
+`calculatePrice(quantity, unit, prices, toGrams?, ctx?)` takes the rest of the parse result as a context object: `{ container, purpose, name }`. Pass it and a can prices by its contents, `to taste` prices at zero, and tap water stops costing money. Omit it and you get 2.1.0 behaviour.
+
+`isFreeIngredient(name)` / `isNegligibleAmount(purpose, quantity, hasUnit)` are exported so a consumer can ask the same questions without going through pricing.
 
 ## Options (`EnricherOptions`)
 
@@ -76,6 +82,8 @@ Exported utilities; `UNITS` is the full unit registry.
   quantity: { value: number|null, min: number|null, max: number|null, isRange: boolean, isApproximate: boolean }
   unit: { name, plural, symbol: string|null, type: 'volume'|'mass'|'count'|'informal', system } | null
   ingredient: { name: string, descriptors: string[], preparation: string[] }
+  containerSize: { value: number, unit: {...} } | null   // "1 can (15 oz)" → 15 oz, PER container
+  purpose: 'to taste'|'as needed'|'for garnish'|'for serving'|'for topping' | null
   comment: string | null
   original: string
 }
@@ -85,12 +93,26 @@ Exported utilities; `UNITS` is the full unit registry.
 ```ts
 {
   cents: number
-  basis: 'gram' | 'unit-estimate'   // gram-accurate vs single-unit fallback
+  basis: 'gram' | 'unit-estimate' | 'free'
   grams: number | null
   perGramCents: number | null
   confidence: 'high' | 'low'        // 'high' = exact mass conversion; 'low' = density-estimated / unit fallback
 }
 ```
+
+## What's new in 2.2
+
+Four pricing gaps, all found in one pass over a real recipe. Each was a row reading "needs price" (or a wrong number) where an honest one was available.
+
+**Containers price by the size on the label.** `1 can (15 oz) black beans` used to price as *one can*, and a can of a bulk good has no honest per-item price, so the row declined. `parse` now records the parenthetical as `containerSize` and pricing multiplies it by the count, so `2 cans (14.5 oz)` is 29 oz. The measure stays in `comment` too, so display doesn't change. `jar`, `bottle`, `tin`, `carton` and `container` joined the unit registry while I was there — they were missing entirely, so `1 jar (16 oz) salsa` was looking up "jar salsa".
+
+**A `free` price basis.** A provider price of `0` means "no data" here, so a genuine zero needed its own signal. `basis: 'free'` at high confidence covers tap water (an exact-match allowlist: coconut, sparkling, tonic and rose water are all still priced) and `salt and pepper to taste`. The free verdict doesn't depend on a successful lookup, which matters because the proxy has no `water` entry at all.
+
+**`purpose` is recorded instead of deleted.** The trailing phrase is the only thing separating "no amount exists" from "the author forgot one". `1 tsp salt to taste` still prices normally, a bare `flour` stays unknown rather than free, and `for garnish` is deliberately *not* free — a garnish is a small amount of a real ingredient. `as needed` also joined the strip list, fixing a row whose name parsed as "salt as needed" and missed lookup entirely.
+
+**Ground spices have densities.** Milled spices at 0.5 g/ml, dried leaf herbs at 0.17. The density table stopped at `salt`, so every `1 tbsp <spice>` declined — the biggest coverage hole the 2.1.0 pricing gate left behind. Herbs that are as often fresh as dried are left out on purpose, since `parse` strips "dried" and "fresh" alike and nothing tells them apart.
+
+Nothing here is a breaking change. New fields are additive, and `calculatePrice`'s new argument is optional.
 
 ## Differences from v1
 

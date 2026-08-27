@@ -53,6 +53,13 @@ interface ParsedIngredientV2 {
     descriptors: string[]      // size/quality kept, not discarded: "large", "fresh"
     preparation: string[]      // normalized prep verbs: "chopped", "minced"
   }
+  containerSize: {             // "1 can (15 oz)" → the measure on the label
+    value: number              // PER container; multiply by quantity for the total
+    unit: { name, plural, symbol, type, system }
+  } | null                     // null unless the unit is a container AND a paren held a measure
+  purpose:                     // the trailing phrase, normalized; null when absent
+    | 'to taste' | 'as needed' | 'for garnish' | 'for serving' | 'for topping'
+    | null
   comment: string | null       // raw free text after first comma + parenthetical; null when absent
   original: string             // input, byte-for-byte
 }
@@ -79,6 +86,19 @@ interface ParsedIngredientV2 {
   a comma) the full prep vocabulary applies, because there the word is an
   instruction (`tomatoes, diced` = dice the tomatoes). This inline/comment
   asymmetry is intentional, not an oversight.
+- **containerSize** (2.2.0) — a container ("1 can", "2 jars") is packaging, not
+  an amount, and nobody sells "one can" as a priceable item. When a parenthetical
+  carries a mass or volume it is recorded here so pricing can use the real
+  measure. Read as the size of **one** container: `"2 cans (14.5 oz each)"` and
+  the far more common `"2 cans (14.5 oz)"` both mean 14.5 oz per can. The measure
+  stays in `comment` as well, deliberately — `comment` is documented as the raw
+  text, the legacy projection has no `containerSize` to fall back on, and a cook
+  shopping for the recipe wants to see the can size.
+- **purpose** (2.2.0) — the trailing phrase that used to be stripped and thrown
+  away. It carries the one fact that separates "no amount exists" from "the
+  author forgot one", which is exactly what pricing needs to decide between $0.00
+  and "unknown". Spellings are folded onto one canonical form each (`to serve` →
+  `for serving`; `as required`/`as desired` → `as needed`).
 - **comment** — everything after the first comma plus any parenthetical content,
   joined and trimmed; `null` when absent. (The legacy projection maps this back
   to `''` to preserve the v1 contract.)
@@ -177,7 +197,8 @@ derived. v2:
 ```ts
 interface Price {
   cents: number                  // estimated total for the parsed quantity
-  basis: 'gram' | 'unit-estimate'// gram-accurate vs single-unit fallback
+  basis:                         // gram-accurate | single-unit fallback | genuinely free
+    | 'gram' | 'unit-estimate' | 'free'
   grams: number | null           // grams used when basis === 'gram'
   perGramCents: number | null
   confidence: 'high' | 'low'     // 'low' when the unit wasn't convertible
@@ -205,6 +226,36 @@ real cost:
 
 Callers should render a null price as "no price" and offer the user a way to
 supply one, not as $0.00.
+
+### 5.2 Free — the zero that means zero (2.2.0)
+
+The gates above create a problem: `usablePrice` treats a provider price of `0` as
+"no data", so there is no way to say "this genuinely costs nothing" with a
+number. `basis: 'free'` (always `cents: 0`, `confidence: 'high'`) is that signal.
+Callers render it as a plain $0.00 — not an estimate, and not the "needs price"
+nag.
+
+Two independent triggers, deliberately kept apart:
+
+- **By name.** An exact-match allowlist of water you get from a tap, plus ice.
+  Exact-match because a word rule on `water` would zero coconut water, sparkling
+  water, tonic water and rose water, all of which you buy (and `watermelon`,
+  `water chestnuts`, `watercress` for good measure). Free wins over an available
+  per-gram price, because the provider's price for "water" is for the bottled
+  kind and 4 cups of tap water at 95c is worse than no price at all.
+- **By purpose.** The phrase **and** the absence of any measure. Both halves
+  matter. `1 tsp salt to taste` has a real amount and is priced normally; a bare
+  `flour` has an *unknown* cost, and zeroing it would understate the recipe,
+  which is the same failure the 2.1.0 gates exist to prevent. Only `to taste` and
+  `as needed` qualify — a garnish is a small amount of a real ingredient, not an
+  absent one.
+
+**The free verdict does not depend on a successful lookup.** `createEnricher`
+decides it before the provider can, and a free row survives a miss with a
+synthetic result. This is not hypothetical: the proxy has no `water` entry under
+any spelling, so the whole path would otherwise be unreachable. The lookup still
+runs first, because the metadata (a thumbnail) is worth having; it just isn't
+allowed to decide the price.
 
 ---
 
@@ -260,3 +311,12 @@ name, and `isApproximate` being set with no number.
 Published as a new major (`@jclind/ingredient-parser` v2, or a new name). The
 flat v1 shape remains available via `legacy/parseIngredientString` for one major
 to ease migration, then is deprecated.
+
+Released so far:
+
+- **2.0.0** — the from-scratch rewrite.
+- **2.1.0** — the pricing gates in §5. Decline rather than guess when a measure
+  can't be priced honestly.
+- **2.2.0** — the coverage the gates exposed: spice/herb densities, container
+  sizes (§2 `containerSize`), and the free basis (§5.2, §2 `purpose`). All
+  additive; `calculatePrice`'s context argument is optional.
