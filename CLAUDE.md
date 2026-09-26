@@ -42,12 +42,41 @@ The proxy server URL defaults to `https://ingredient-parser-service-production-2
 
 ### Exports
 
-`index.ts` exports two public entry points:
+`index.ts` exports three public entry points:
 
-- `ingredientParser(ingrString, apiKey, options?)` — full async pipeline (parsed + enriched)
+- `ingredientParser(ingrString, apiKey, options?)` — full async pipeline (parsed + enriched), Spoonacular-only pricing (v1, unchanged)
 - `parseIngredientString(ingrStr)` — sync-only local parsing, no network call
+- `createIngredientParser(config)` — **v2** Kroger-aware client factory; see below
 
 All shared types live in `types.ts` and are re-exported from the package root.
+
+### v2: Kroger pricing (`createIngredientParser`)
+
+`createIngredientParser(config)` returns a `{ parse(ingrString, options?) }` client with the same I/O contract as `ingredientParser`, but `totalPriceUSACents` is a real Kroger shelf price when one can be matched, falling back to the Spoonacular estimate otherwise.
+
+```
+parse()
+  ├─ parseIngredientString()        → ParsedIngredient (local)
+  ├─ getIngredientInfo()            → IngredientData (Spoonacular metadata via Mongo proxy) — unchanged
+  └─ price resolution
+       ├─ tryKroger() (when config.kroger set)
+       │    ├─ KrogerClient.ensureLocationId()   resolve store from zipCode (memoized)
+       │    ├─ getKrogerPriceFromServer()         Mongo kroger_prices cache (per store+name)
+       │    ├─ KrogerClient.getPrice()            live Kroger product search + best match
+       │    ├─ saveKrogerPriceToServer()          fire-and-forget write-back
+       │    └─ krogerTotalPriceCents()            bridge per-unit price → cents via calculatePrice
+       └─ spoonacularPrice()  (fallback)          calculatePrice(estimatedPrices) — same as v1
+```
+
+Key v2 files:
+- `src/funcs/createIngredientParser.ts` — the factory + price resolution + graceful fallback
+- `src/funcs/krogerPrice.ts` — bridges a Kroger per-base-unit price into `{estimatedGramPrice, estimatedSingleUnitPrice}` cents and reuses `calculatePrice`
+- `src/funcs/buildIngredientData.ts` — shared assembly of the reduced `IngredientData` + additive fields (`priceSource`, `store`, `matchedProduct`)
+- `src/kroger/krogerClient.ts` — axios-based OAuth (client-credentials) + store resolution + product search/match
+- `src/kroger/{tokenStore,match,units}.ts` — token caching, fuzzy match, pack-size→per-unit (ported from the `ingredient-prices` prototype)
+- `src/api/krogerCacheRequests.ts` — GET/POST to the proxy server's `/kroger-price` endpoints
+
+The legacy `ingredientParser` path is deliberately left untouched (no new output fields) for byte-compatibility; only the `createIngredientParser` path emits the additive Kroger fields. Kroger prices are cached server-side in a separate `kroger_prices` collection (see the server repo), never mixed into the Spoonacular metadata cache.
 
 ### Price Calculation
 

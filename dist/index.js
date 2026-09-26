@@ -17,11 +17,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseIngredientString = exports.ingredientParser = void 0;
+exports.createIngredientParser = exports.parseIngredientString = exports.ingredientParser = void 0;
 const ingredientParser_1 = __importDefault(require("./src/funcs/ingredientParser"));
 exports.ingredientParser = ingredientParser_1.default;
 var parseIngredientString_1 = require("./src/funcs/parseIngredientString");
 Object.defineProperty(exports, "parseIngredientString", { enumerable: true, get: function () { return parseIngredientString_1.parseIngredientString; } });
+var createIngredientParser_1 = require("./src/funcs/createIngredientParser");
+Object.defineProperty(exports, "createIngredientParser", { enumerable: true, get: function () { return createIngredientParser_1.createIngredientParser; } });
 // const test = async () => {
 //   const ingrData = await ingredientParser(
 //     '1 lb boneless skinless chicken breast',

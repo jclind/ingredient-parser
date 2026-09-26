@@ -48,7 +48,14 @@ export interface IngredientData {
     unitLong?: string;
     original?: any;
     id?: number;
+    /** Where `totalPriceUSACents` came from. */
+    priceSource?: PriceSource;
+    /** Store/banner the Kroger price came from (e.g. "Ralphs"), when applicable. */
+    store?: string | null;
+    /** The Kroger product description that was matched, when applicable. */
+    matchedProduct?: string | null;
 }
+export type PriceSource = 'kroger' | 'spoonacular';
 export interface Nutrition {
     nutrients: Nutrient[];
     properties: Property[];
@@ -87,4 +94,53 @@ export type OptionsType = {
     imageSize?: SpoonacularImageSize;
     serverUrl?: string;
 };
+/** Kroger Developer API credentials (OAuth2 client-credentials). */
+export interface KrogerConfig {
+    clientId: string;
+    clientSecret: string;
+    /** Override the API base (useful for tests). Defaults to https://api.kroger.com/v1 */
+    baseUrl?: string;
+}
+/**
+ * Config for `createIngredientParser`. Spoonacular still supplies ingredient
+ * metadata (image, aisle, nutrition); Kroger, when configured, supplies the
+ * real shelf price that becomes `totalPriceUSACents`, falling back to
+ * Spoonacular's estimate when Kroger can't match.
+ */
+export interface IngredientParserConfig {
+    /** Spoonacular API key — still required for ingredient metadata. */
+    spoonacularAPIKey: string;
+    /** Kroger credentials. Omit to behave exactly like the legacy parser. */
+    kroger?: KrogerConfig;
+    /** Zip code whose nearest Kroger-banner store sets the prices. */
+    zipCode?: string;
+    /** Pin a specific Kroger locationId instead of resolving one from `zipCode`. */
+    locationId?: string;
+    /** Override the metadata/cache proxy server URL. */
+    serverUrl?: string;
+    /**
+     * Freshness window (ms) for a cached Kroger price before it is re-fetched.
+     * Default: 24h. A cached price older than this is ignored.
+     */
+    krogerCacheTtlMs?: number;
+}
+/** Per-call options for `createIngredientParser(...).parse()`. */
+export type ParseOptions = OptionsType & {
+    /** Bypass the Kroger price cache and force a fresh Kroger fetch. */
+    fresh?: boolean;
+};
+/**
+ * Shape of a Kroger price cached on the server, keyed by locationId + name.
+ * `fetchedAt` is an ISO timestamp the package uses to enforce freshness.
+ */
+export interface KrogerPriceData {
+    locationId: string;
+    store: string | null;
+    matchedProduct: string | null;
+    regular: number | null;
+    promo: number | null;
+    perUnit: number | null;
+    unit: string | null;
+    fetchedAt: string;
+}
 export {};

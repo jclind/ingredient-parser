@@ -1,11 +1,91 @@
-# @jclind/ingredient-parser
+# @jclind/ingredient-parser-v2
 
-[![npm version](https://img.shields.io/npm/v/@jclind/ingredient-parser)](https://www.npmjs.com/package/@jclind/ingredient-parser)
-[![license](https://img.shields.io/npm/l/@jclind/ingredient-parser)](https://github.com/jclind/ingredient-parser/blob/main/LICENSE)
-
-A TypeScript package for parsing ingredient strings and retrieving structured ingredient data from the Spoonacular API.
+A TypeScript package for parsing ingredient strings and retrieving structured ingredient data from the Spoonacular API — now with **real Kroger retail pricing**.
 
 Built on top of [recipe-ingredient-parser-v3](https://www.npmjs.com/package/recipe-ingredient-parser-v3). If you only need ingredient parsing without ingredient metadata, nutrition, or API lookups, you may prefer using that package directly.
+
+---
+
+## What's new in v2: Kroger pricing
+
+v1 returned `totalPriceUSACents` from Spoonacular's *estimated* cost. v2 keeps everything v1 did and adds a new client factory, `createIngredientParser`, that fetches the **real shelf price** for the ingredient from the Kroger-banner store nearest a zip code, and only falls back to the Spoonacular estimate when Kroger can't match.
+
+- **Same input/output contract** as v1. Spoonacular still supplies all metadata
+  (image, aisle, nutrition, `possibleUnits`). Kroger only changes where
+  `totalPriceUSACents` comes from.
+- **Graceful fallback.** No store in range, no product match, or any Kroger
+  error → the Spoonacular estimate is used, exactly like v1.
+- **Additive output fields** so you can tell what happened: `priceSource`
+  (`'kroger' | 'spoonacular'`), `store`, and `matchedProduct`.
+- **Cached per store + day** in the proxy server's MongoDB so repeat lookups
+  don't re-hit Kroger.
+
+```ts
+import { createIngredientParser } from '@jclind/ingredient-parser-v2'
+
+const parser = createIngredientParser({
+  spoonacularAPIKey: process.env.SPOONACULAR_API_KEY!,
+  kroger: {
+    clientId: process.env.KROGER_CLIENT_ID!,
+    clientSecret: process.env.KROGER_CLIENT_SECRET!,
+  },
+  zipCode: '45202', // resolved to the nearest store once, then reused
+})
+
+const result = await parser.parse('2 cups onions, diced')
+// result.ingredientData.totalPriceUSACents → real price for 2 cups from Kroger
+// result.ingredientData.priceSource        → 'kroger' (or 'spoonacular' on fallback)
+// result.ingredientData.store              → 'Ralphs'
+// result.ingredientData.matchedProduct     → 'Kroger Yellow Onion'
+```
+
+### `createIngredientParser(config)`
+
+| Config field        | Type                 | Required | Description |
+|---------------------|----------------------|----------|-------------|
+| `spoonacularAPIKey` | `string`             | Yes      | Still required — supplies ingredient metadata. |
+| `kroger`            | `{ clientId, clientSecret, baseUrl? }` | No | Kroger Developer API credentials. Omit to behave exactly like v1. |
+| `zipCode`           | `string`             | No*      | Zip whose nearest Kroger-banner store sets prices. |
+| `locationId`        | `string`             | No*      | Pin a specific Kroger store instead of resolving from `zipCode`. |
+| `serverUrl`         | `string`             | No       | Override the metadata/cache proxy server URL. |
+| `krogerCacheTtlMs`  | `number`             | No       | Freshness window for a cached Kroger price. Default 24h. |
+
+\* When `kroger` is set, provide a `zipCode` **or** a `locationId`.
+
+`createIngredientParser` returns a client with one method:
+
+```ts
+parser.parse(
+  ingredientString: string,
+  options?: {
+    returnNutritionData?: boolean
+    imageSize?: '100x100' | '250x250' | '500x500'
+    fresh?: boolean   // bypass the Kroger price cache for this call
+  }
+): Promise<IngredientResponse>   // identical shape to ingredientParser()
+```
+
+### How the Kroger price becomes `totalPriceUSACents`
+
+Kroger returns a package price plus a pack size (e.g. `$3.49`, `18 ct`). The
+package is reduced to a per-base-unit price, then bridged to your recipe
+quantity using the same `@jclind/ingredient-unit-converter` path v1 already used
+for Spoonacular — so `totalPriceUSACents` means exactly what it did before.
+Volume↔weight conversions use a water-like density approximation; count-only
+products (e.g. eggs) are priced per each.
+
+### Getting Kroger credentials
+
+Register a free app at <https://developer.kroger.com> for a `clientId` /
+`clientSecret`. The package requests the `product.compact` scope via the
+client-credentials grant; no per-user OAuth is needed.
+
+The new MongoDB collection used for caching Kroger prices is documented in the
+[server README](../ingredient-parser-server/README.md#kroger-price-cache-v2).
+
+---
+
+## v1 API (unchanged)
 
 ## Installation
 

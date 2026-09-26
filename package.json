@@ -1,12 +1,14 @@
 {
-  "name": "@jclind/ingredient-parser",
-  "version": "1.3.4",
-  "description": "Parses given sentence including ingredient information and attempts to return quantity, measurement and ingredient data",
+  "name": "@jclind/ingredient-parser-v2",
+  "version": "2.0.0",
+  "description": "Parses an ingredient string and enriches it with Spoonacular metadata plus real Kroger retail pricing (with a Spoonacular estimate fallback)",
   "keywords": [
     "recipe",
     "ingredient",
     "parse",
-    "units"
+    "units",
+    "kroger",
+    "price"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

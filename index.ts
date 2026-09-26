@@ -1,6 +1,10 @@
 import ingredientParser from './src/funcs/ingredientParser'
 export { ingredientParser }
 export { parseIngredientString } from './src/funcs/parseIngredientString'
+export {
+  createIngredientParser,
+  IngredientParserClient,
+} from './src/funcs/createIngredientParser'
 
 // const test = async () => {
 //   const ingrData = await ingredientParser(
