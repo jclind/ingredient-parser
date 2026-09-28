@@ -298,6 +298,24 @@ malformed, or the safe fix is non-obvious. None throw; all degrade predictably.
 - **Attached punctuation** (`"1 tsp.salt"`, no space) → the alias requires a
   trailing space/end, so `tsp.salt` is not split.
 - **Stray leading article** (`"1/2 a lemon"` → name `"a lemon"`). Cosmetic.
+- **Trailing sentence punctuation** (`"1 cup flour."`, `"salt!"`) stays in the
+  name (`"flour."`), so the exact-match proxy misses. Likely a bug; strip it.
+- **Tab after the unit** (`"1\tcup\tflour"`) → `unit: null`, name
+  `"cup\tflour"`. The alias match wants a literal space. A tab before the unit
+  and doubled spaces both work, so this looks unintended. Likely a bug.
+- **Bare `c` and `T`** (`"1 c salt"`, `"1 T butter"`) aren't cup and
+  tablespoon. `c` is cup's own symbol, and every other symbol is also an input
+  alias. `T` vs `t` is ambiguous across recipes; decide, then either add them
+  or say here why not.
+- **Modifier before an informal unit** (`"generous handful spinach"`) →
+  `quantity: null`, while `"handful spinach"` gets an implicit 1.
+- **Container size with a trailer** (`"1 (8 oz, drained) can chickpeas"`) →
+  `containerSize: null`, so the can doesn't price by its label. Arguable: the
+  rule declines prose parens, and `drained` does land in `preparation`.
+
+  These five came from a GLM test pass on 2026-09-28 (branch
+  `glm/parser-tests`, `src/__tests__/glm-suspected-bugs.test.ts`, 9 cases, all
+  confirmed failing on `2.x` at `f0234be`).
 - **Empty `ingredient.name`** is a valid output for genuinely incomplete lines
   (`"2 cups"`, `"2 cloves"`, gibberish); callers should treat `""` as "no
   ingredient identified." (Self-naming units like `bay leaf` are exempt — see §2.)
