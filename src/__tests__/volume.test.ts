@@ -84,6 +84,14 @@ describe('lookupDensity', () => {
     expect(lookupDensity('shredded mexican cheese blend')).toBe(0.42)
     expect(lookupDensity('frozen shelled edamame')).toBe(0.5)
     expect(lookupDensity('frozen mixed berries')).toBe(0.63)
+    expect(lookupDensity('frozen mixed berry blend')).toBe(0.63)
+  })
+
+  it('leaves berries that are not fruit alone', () => {
+    // A bare `berries` term would price these as fruit: wheat berries are a
+    // grain, juniper berries a whole spice.
+    expect(lookupDensity('wheat berries')).toBeNull()
+    expect(lookupDensity('juniper berries')).toBeNull()
   })
 
   it('keeps pepper jack out of the pepper spice group', () => {

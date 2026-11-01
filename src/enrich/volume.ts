@@ -110,7 +110,7 @@ const DENSITIES: { match: string[]; density: number }[] = [
   { match: ['celery'], density: 0.43 },
   { match: ['mushroom'], density: 0.29 },
   { match: ['peas'], density: 0.57 },
-  { match: ['strawberries', 'strawberry', 'blueberries', 'blueberry', 'raspberries', 'raspberry', 'blackberries', 'blackberry', 'mixed berries', 'berries'], density: 0.63 },
+  { match: ['strawberries', 'strawberry', 'blueberries', 'blueberry', 'raspberries', 'raspberry', 'blackberries', 'blackberry', 'mixed berries', 'mixed berry', 'frozen berries'], density: 0.63 },
   { match: ['raisins', 'raisin', 'dried cranberries'], density: 0.61 },
 
   // Nuts
