@@ -68,7 +68,14 @@ const DENSITIES: { match: string[]; density: number }[] = [
   { match: ['cream cheese'], density: 0.98 },
   { match: ['cream'], density: 1.0 },
   { match: ['yogurt', 'yoghurt'], density: 1.03 },
-  { match: ['shredded cheese', 'grated cheese', 'parmesan', 'cheddar', 'mozzarella'], density: 0.42 },
+  // 'cheese blend' and the jacks ride on the shredded-cheese figure: they come
+  // shredded the same way. 'pepper jack' also has to outrank the `pepper` spice.
+  {
+    match: ['shredded cheese', 'grated cheese', 'parmesan', 'cheddar', 'mozzarella', 'monterey jack', 'pepper jack', 'cheese blend'],
+    density: 0.42,
+  },
+  // Crumbled, as recipes measure it: USDA FDC 173420 gives 150 g per cup.
+  { match: ['feta'], density: 0.63 },
 
   // Liquids and condiments
   // 'ginger ale'/'ginger beer' are listed only to outrank the `ginger` spice term.
@@ -86,6 +93,11 @@ const DENSITIES: { match: string[]; density: number }[] = [
   { match: ['rolled oats', 'oats', 'oatmeal'], density: 0.38 },
   { match: ['lentils'], density: 0.81 },
   { match: ['beans', 'chickpeas', 'garbanzo'], density: 0.72 },
+  // Shelled, frozen: USDA FDC 168410 gives 118 g per cup.
+  { match: ['edamame'], density: 0.5 },
+  // Homemade granola in USDA FDC 171646 is 122 g per cup. Store clusters run a
+  // little lighter, well inside the ±20% a volume price already declares.
+  { match: ['granola'], density: 0.52 },
 
   // Produce, chopped or canned as a recipe would measure it
   { match: ['diced tomatoes', 'crushed tomatoes', 'chopped tomatoes'], density: 1.0 },
@@ -98,11 +110,15 @@ const DENSITIES: { match: string[]; density: number }[] = [
   { match: ['celery'], density: 0.43 },
   { match: ['mushroom'], density: 0.29 },
   { match: ['peas'], density: 0.57 },
-  { match: ['strawberries', 'strawberry', 'blueberries', 'blueberry', 'raspberries', 'raspberry', 'blackberries', 'blackberry'], density: 0.63 },
+  { match: ['strawberries', 'strawberry', 'blueberries', 'blueberry', 'raspberries', 'raspberry', 'blackberries', 'blackberry', 'mixed berries', 'berries'], density: 0.63 },
   { match: ['raisins', 'raisin', 'dried cranberries'], density: 0.61 },
 
   // Nuts
   { match: ['walnut', 'pecan', 'almond', 'cashew', 'pistachio', 'peanut'], density: 0.5 },
+
+  // Seeds. USDA FDC 170554 lists chia by the ounce only. Packaged chia labels a
+  // level tablespoon at 12 g, which is 0.81 g/ml.
+  { match: ['chia seeds', 'chia'], density: 0.8 },
 
   // Spices, milled
   //

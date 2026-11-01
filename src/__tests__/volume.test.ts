@@ -75,6 +75,27 @@ describe('lookupDensity', () => {
     expect(lookupDensity('parsley')).toBeNull()
   })
 
+  it('prices the rows the first Prepify meal-prep recipes left unpriced', () => {
+    // Names exactly as parse() hands them over, from the 2026-11-01 drafts.
+    expect(lookupDensity('chia seeds')).toBe(0.8)
+    expect(lookupDensity('granola')).toBe(0.52)
+    expect(lookupDensity('crumbled feta cheese')).toBe(0.63)
+    expect(lookupDensity('shredded monterey jack cheese')).toBe(0.42)
+    expect(lookupDensity('shredded mexican cheese blend')).toBe(0.42)
+    expect(lookupDensity('frozen shelled edamame')).toBe(0.5)
+    expect(lookupDensity('frozen mixed berries')).toBe(0.63)
+  })
+
+  it('keeps pepper jack out of the pepper spice group', () => {
+    expect(lookupDensity('shredded pepper jack cheese')).toBe(0.42)
+  })
+
+  it('still declines leafy greens and fresh herbs from the same recipes', () => {
+    expect(lookupDensity('baby spinach')).toBeNull()
+    expect(lookupDensity('shredded red cabbage')).toBeNull()
+    expect(lookupDensity('chopped cilantro')).toBeNull()
+  })
+
   it('prices milled spices, the category the table used to end before', () => {
     // Straight from the 1.0.1 prod smoke: the table stopped at `salt`, so every
     // `1 tsp <spice>` in every savory recipe read "needs price".
